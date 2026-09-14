@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Steps poster template (playbook style, 2x2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     TEMPLATE: four numbered cards with visuals, marching-ants loop.
+     Replace: brand tokens, title, subtitle, card copy, visuals,
+     takeaway, footnote, author name + site. Keep the structure.
+     Assets expected next to this file: author.jpeg, optional
+     mascot.png, shot_1.png, shot_2.png (or swap for a mock / list).
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --brand: #1E40AF; --brand-soft: #4c66d9; --brand-text: #b9c6f0;
+    --ink: #1b2740; --muted: #66738a;
+    --blue: #2f7fe0; --purple: #a855f7; --green: #10b981; --amber: #e8a020;
+    --coral: #e87456; --card-border: #e3e8ee;
+  }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); }
+  .poster {
+    position: relative; width: 1080px; height: 1350px; padding: 36px 40px 26px;
+    background-color: #fdfdfd;
+    background-image:
+      linear-gradient(rgba(216,224,235,.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(216,224,235,.55) 1px, transparent 1px),
+      linear-gradient(rgba(226,232,241,.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(226,232,241,.35) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 10px 10px, 10px 10px;
+  }
+
+  /* header */
+  .header { display: flex; align-items: center; gap: 22px; margin-bottom: 14px; padding-left: 6px; }
+  .mascot { width: 118px; height: 118px; object-fit: contain; }
+  h1 { font-family: 'Poppins', sans-serif; font-size: 44px; line-height: 1.04; font-weight: 800; letter-spacing: -1.2px; }
+  h1 .accent { color: var(--brand); }
+  .subtitle { margin-top: 8px; font-size: 20px; font-weight: 600; color: #526176; letter-spacing: -.2px; }
+
+  /* grid of cards */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card {
+    position: relative; padding: 16px 20px; display: flex; flex-direction: column;
+    border: 2px solid var(--card-border); border-radius: 18px;
+    background: rgba(255,255,255,.97); box-shadow: 0 10px 26px rgba(22,35,56,.09);
+  }
+  .card-head { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+  .badge { width: 31px; height: 31px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-size: 16px; font-weight: 800; flex: 0 0 auto; }
+  .tile { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; }
+  .tile svg { width: 22px; height: 22px; }
+  h2 { font-family: 'Poppins', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -.3px; line-height: 1.05; }
+
+  /* visual box: screenshot, mock UI or illustrative list */
+  .visual { position: relative; flex: 1; min-height: 228px; border-radius: 12px; overflow: hidden; border: 1.5px solid #dfe5ee; background: #fff; }
+  .visual img.shot { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .visual .placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: #9aa6b8; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: repeating-linear-gradient(45deg, #fafbfd 0 12px, #f2f5f9 12px 24px); }
+
+  /* chat mock */
+  .chatbox { position: absolute; inset: 0; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; gap: 10px; background: #fbfaf7; }
+  .tools { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #7a8497; letter-spacing: .3px; }
+  .tools .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+  .file { display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; padding: 5px 11px 5px 8px; border-radius: 8px; background: #fff; border: 1.5px solid #e2e8f0; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #33415c; }
+  .file svg { width: 14px; height: 14px; }
+  .prompt { position: relative; padding: 12px 46px 12px 14px; background: #f5f7fa; border: 2px solid #e2e8f0; border-radius: 12px; color: #33415c; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.42; font-weight: 500; }
+  .prompt b { color: var(--green); font-weight: 600; }
+  .send { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--coral); box-shadow: 0 2px 6px rgba(232,116,86,.4); }
+  .send svg { width: 14px; height: 14px; }
+
+  /* illustrative list (fictional entries) */
+  .rows { position: absolute; inset: 0; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(22,35,56,.08); }
+  .row .av { width: 34px; height: 34px; border-radius: 50%; background: #dbe6fb; color: var(--brand); display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+  .row .nm { font-size: 14.5px; font-weight: 800; }
+  .row .rl { font-size: 12px; font-weight: 600; color: #4d5b72; }
+  .row .pill { margin-left: auto; padding: 4px 10px; border-radius: 999px; background: #fdf1cf; color: #8a5a00; font-size: 12px; font-weight: 800; }
+  .row .pill.off { background: #eef1f6; color: #9aa6b8; }
+  .visual .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: linear-gradient(rgba(255,255,255,0), #fff); }
+
+  .line { margin-top: 13px; font-size: 15.5px; line-height: 1.4; font-weight: 500; color: #3f4d63; }
+  .line b { font-weight: 700; color: var(--ink); }
+  .payoff { margin-top: 8px; display: flex; gap: 8px; font-size: 15px; line-height: 1.38; font-weight: 500; color: var(--muted); }
+  .payoff .arr { font-weight: 800; flex: 0 0 auto; }
+
+  .c-blue { color: var(--blue); } .b-blue { background: var(--blue); } .t-blue { background: rgba(47,127,224,.12); }
+  .c-purple { color: var(--purple); } .b-purple { background: var(--purple); } .t-purple { background: rgba(168,85,247,.12); }
+  .c-green { color: var(--green); } .b-green { background: var(--green); } .t-green { background: rgba(16,185,129,.12); }
+  .c-amber { color: var(--amber); } .b-amber { background: var(--amber); } .t-amber { background: rgba(232,160,32,.14); }
+
+  /* takeaway, footnote, footer */
+  .takeaway { margin-top: 20px; padding: 15px 26px; border-radius: 14px; background: #eef3fb; border: 2px solid #d6e2f5; display: flex; align-items: center; gap: 16px; }
+  .takeaway .q { font-family: 'Poppins', sans-serif; font-size: 44px; line-height: .6; color: var(--brand); font-weight: 800; margin-top: 12px; }
+  .takeaway p { font-size: 19px; line-height: 1.35; font-weight: 600; color: var(--ink); text-wrap: balance; }
+  .takeaway p b { color: var(--brand); font-weight: 800; }
+  .footnote { margin-top: 16px; display: flex; justify-content: center; align-items: center; gap: 9px; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; color: #7a8497; }
+  .footnote .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+  .footer { display: flex; justify-content: center; margin-top: 14px; }
+  .pill-author { display: flex; align-items: center; gap: 13px; padding: 9px 26px 9px 10px; border-radius: 999px; background: var(--brand); color: #fff; box-shadow: 0 10px 24px rgba(30,64,175,.35); }
+  .pill-author img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand-soft); }
+  .pill-author .who { font-size: 14px; font-weight: 800; letter-spacing: .8px; }
+  .pill-author .site { font-size: 13px; font-weight: 600; color: var(--brand-text); }
+
+  /* animation: recipe 1, marching dashed outline, one card at a time */
+  .ants { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); overflow: visible; pointer-events: none; }
+  .ants rect { x: 1.5px; y: 1.5px; width: calc(100% - 3px); height: calc(100% - 3px); rx: 22px; fill: none; stroke: transparent; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 7 8; }
+  .c1 .ants rect { animation: march 5s linear infinite, ants1 5s linear infinite; }
+  .c2 .ants rect { animation: march 5s linear infinite, ants2 5s linear infinite; }
+  .c3 .ants rect { animation: march 5s linear infinite, ants3 5s linear infinite; }
+  .c4 .ants rect { animation: march 5s linear infinite, ants4 5s linear infinite; }
+  @keyframes march { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -75px; } }
+  @keyframes ants1 { 0%, 1.5% { stroke: rgba(47,127,224,0); } 4%, 19% { stroke: rgba(47,127,224,1); } 22.5%, 100% { stroke: rgba(47,127,224,0); } }
+  @keyframes ants2 { 0%, 20.5% { stroke: rgba(168,85,247,0); } 23%, 38% { stroke: rgba(168,85,247,1); } 41.5%, 100% { stroke: rgba(168,85,247,0); } }
+  @keyframes ants3 { 0%, 39.5% { stroke: rgba(16,185,129,0); } 42%, 57% { stroke: rgba(16,185,129,1); } 60.5%, 100% { stroke: rgba(16,185,129,0); } }
+  @keyframes ants4 { 0%, 58.5% { stroke: rgba(232,160,32,0); } 61%, 76% { stroke: rgba(232,160,32,1); } 79.5%, 100% { stroke: rgba(232,160,32,0); } }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <header class="header">
+    <!-- delete the img if there is no mascot -->
+    <img class="mascot" src="mascot.png" alt="" onerror="this.remove()">
+    <div>
+      <h1>Your title with <span class="accent">one</span><br>accent word in it</h1>
+      <div class="subtitle">One line that says what the reader gets. Four steps.</div>
+    </div>
+  </header>
+
+  <section class="grid">
+
+    <article class="card c1">
+      <svg class="ants"><rect/></svg>
+      <div class="card-head">
+        <span class="badge b-blue">1</span>
+        <span class="tile t-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#2f7fe0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 17v1.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V17"/></svg></span>
+        <h2>Step one title</h2>
+      </div>
+      <!-- screenshot: replace with <img class="shot" src="shot_1.png" alt=""> -->
+      <div class="visual"><div class="placeholder">shot_1.png</div></div>
+      <p class="line"><b>The click path or the key action in bold.</b> One plain sentence with what to do.</p>
+      <p class="payoff"><span class="arr c-blue">↳</span><span>What the reader gets out of this step.</span></p>
+    </article>
+
+    <article class="card c2">
+      <svg class="ants"><rect/></svg>
+      <div class="card-head">
+        <span class="badge b-purple">2</span>
+        <span class="tile t-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10M14.5 9.5v10"/></svg></span>
+        <h2>Step two title</h2>
+      </div>
+      <div class="visual"><div class="placeholder">shot_2.png</div></div>
+      <p class="line"><b>What they see now,</b> and the one detail that matters.</p>
+      <p class="payoff"><span class="arr c-purple">↳</span><span>A caveat or reassurance, said plainly.</span></p>
+    </article>
+
+    <article class="card c3">
+      <svg class="ants"><rect/></svg>
+      <div class="card-head">
+        <span class="badge b-green">3</span>
+        <span class="tile t-green"><svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.9 9l5.6 1.9-5.6 1.9L12 18.5l-1.9-5.7-5.6-1.9L10.1 9z"/><path d="M19 16.5v3M17.5 18h3"/></svg></span>
+        <h2>Hand it to the AI</h2>
+      </div>
+      <div class="visual">
+        <div class="chatbox">
+          <div class="tools"><span class="dot"></span>NEW CHAT</div>
+          <div class="file"><svg viewBox="0 0 24 24" fill="none" stroke="#33415c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>attached-file.csv</div>
+          <div class="prompt">"The prompt, short, with the parts the reader fills in as <b>[placeholders]</b> in the card colour."
+            <span class="send"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <p class="line"><b>Upload, fill in the brackets, send.</b> What the AI does with it.</p>
+      <p class="payoff"><span class="arr c-green">↳</span><span>Why the AI is better at this than a keyword filter.</span></p>
+    </article>
+
+    <article class="card c4">
+      <svg class="ants"><rect/></svg>
+      <div class="card-head">
+        <span class="badge b-amber">4</span>
+        <span class="tile t-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#e8a020" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h2M4 12h2M4 17.5h2M10 6.5h10M10 12h10M10 17.5h10"/></svg></span>
+        <h2>What you get back</h2>
+      </div>
+      <div class="visual">
+        <div class="rows">
+          <div class="row"><span class="av">AB</span><div><div class="nm">Fictional Name</div><div class="rl">Founder · Example Studio</div></div><span class="pill">✉ email</span></div>
+          <div class="row"><span class="av">CD</span><div><div class="nm">Another Name</div><div class="rl">CEO · Sample Group</div></div><span class="pill">✉ email</span></div>
+          <div class="row"><span class="av">EF</span><div><div class="nm">Third Name</div><div class="rl">Head of Marketing · Placeholder</div></div><span class="pill off">no email</span></div>
+          <div class="row"><span class="av">GH</span><div><div class="nm">Fourth Name</div><div class="rl">Managing Director · Demo Co</div></div><span class="pill">✉ email</span></div>
+        </div>
+        <div class="fade"></div>
+      </div>
+      <p class="line"><b>The result, named:</b> the columns or the thing they hold in their hands.</p>
+      <p class="payoff"><span class="arr c-amber">↳</span><span>Your own real number as proof, with its source in concept.md.</span></p>
+    </article>
+
+  </section>
+
+  <div class="takeaway">
+    <span class="q">“</span>
+    <p>One sentence the reader repeats to a colleague, with the <b>key phrase in the brand colour.</b></p>
+  </div>
+
+  <div class="footnote"><span class="dot"></span>full walkthrough · link in the comments</div>
+
+  <footer class="footer">
+    <div class="pill-author">
+      <img src="author.jpeg" alt="">
+      <span class="who">AUTHOR NAME</span>
+      <span class="site">· yoursite.com</span>
+    </div>
+  </footer>
+</div>
+<script>
+  window.DURATION_MS = 5000;
+  window.seek = function (ms) {
+    document.getAnimations().forEach(function (a) { a.pause(); a.currentTime = ms; });
+  };
+</script>
+</body>
+</html>
