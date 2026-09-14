@@ -1,6 +1,6 @@
 # linkedin-infographic
 
-A Claude Code skill that turns a LinkedIn post, a how-to video or a sketch into an
+A skill for Claude and ChatGPT that turns a LinkedIn post, a how-to video or a sketch into an
 animated infographic: a static 1080x1350 HTML poster with one calm accent animation,
 rendered to MP4 (LinkedIn), GIF (email, blog) and a cover PNG.
 
@@ -9,10 +9,18 @@ Requirements: Python 3 with `playwright` (`pip install playwright && playwright 
 
 ## Install
 
-Copy this folder into your project's `.claude/skills/` (so you get
-`.claude/skills/linkedin-infographic/SKILL.md`), or into `~/.claude/skills/` to have it
-in every project. Restart Claude Code; the skill then triggers on "infographic",
-"animated infographic" or "a visual for this post", or via `/linkedin-infographic`.
+This is a standard `SKILL.md` skill (the open Agent Skills format), so it works in both
+Claude and ChatGPT:
+
+- **Claude Code:** copy this folder into your project's `.claude/skills/` (so you get
+  `.claude/skills/linkedin-infographic/SKILL.md`), or into `~/.claude/skills/` for every
+  project. Restart Claude Code.
+- **ChatGPT:** open Skills, upload this folder as a skill, save and install it.
+- **Codex (CLI or app):** put the folder in your Codex skills directory (`~/.codex/skills/`).
+
+Then ask for "an infographic for this post" or call the skill by name. The render step runs
+Playwright and ffmpeg on your machine, so use it from an agent that can run scripts (Claude
+Code or Codex); in a plain chat the skill still does the concept and copy.
 
 ## How it works
 
