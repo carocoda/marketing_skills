@@ -4,7 +4,7 @@ Hi, I'm Caro 👋
 
 I build [Postiv.ai](https://postiv.ai) and I make a lot of my marketing with AI, in Claude and
 in ChatGPT. This repo is where I share the skills I actually use, free. They're written in the
-open `SKILL.md` format, so the same folder works in Claude Code, in ChatGPT (Skills) and in Codex. Each one is a complete package: the workflow, the rules that make the output
+open `SKILL.md` format, so the same folder works in Claude Cowork & Code, and in ChatGPT Work & Codex. Each one is a complete package: the workflow, the rules that make the output
 good, the scripts and templates it needs, and a README.
 
 ## Skills
