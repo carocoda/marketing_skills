@@ -13,6 +13,7 @@ good, the scripts and templates it needs, and a README.
 | --- | --- |
 | [`linkedin-infographic`](linkedin-infographic/) | Turns a LinkedIn post, a how-to video or a sketch into an animated infographic: a static 1080x1350 poster with one calm accent animation, rendered to MP4 (LinkedIn), GIF (email, blog) and a cover PNG. Includes screenshot sourcing, QA at feed size and publishing notes. |
 | [`linkedin-outlier-finder`](linkedin-outlier-finder/) | Finds unusually successful LinkedIn posts, checks the comparison behind the numbers, and helps you develop an original angle. Works with Postiv or supplied post data. [Download ZIP](https://github.com/carocoda/marketing_skills/releases/download/linkedin-outlier-finder-v1.0.0/linkedin-outlier-finder.zip). |
+| [`linkedin-profile-check`](linkedin-profile-check/) | Checks your LinkedIn profile as a sales page. Asks a few questions first, gives feedback on your headline, banner and Featured section, writes three new headlines and image prompts for a new banner and Featured images from your own photos and logo, and can plan your first week of posts. Works in any ChatGPT plan: download the `.md` and drag it into a chat. [Download ZIP](https://github.com/carocoda/marketing_skills/releases/download/linkedin-profile-check-v1.0.0/linkedin-profile-check.zip) · [Download .md](https://github.com/carocoda/marketing_skills/releases/download/linkedin-profile-check-v1.0.0/linkedin-profile-check.md). |
 
 More coming. Star the repo if you want to know when.
 
