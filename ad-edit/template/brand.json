@@ -1,0 +1,26 @@
+{
+ "_about": "Brand for every ad in this folder. Written from the setup interview; edit.json \"brand\" can override any field per ad. Fields: references/edit-json.md.",
+ "name": "YOUR BRAND",
+ "logo": "",
+ "tag": true,
+ "url": "yourwebsite.com",
+ "cta": "LEARN MORE →",
+ "locale": "en-US",
+ "colors": {
+  "bg": "#F4F1EA",
+  "ink": "#111111",
+  "paper": "#FFFFFF",
+  "accent": "#FFD84D",
+  "accent2": "#9BE3C3",
+  "accent3": "#FF9E8A",
+  "accent4": "#C9D3FF",
+  "caption": "#FFFFFF",
+  "caption_active": "",
+  "shadow": ""
+ },
+ "fonts": {
+  "display": {"family": "Archivo", "weight": 800, "google": true},
+  "label": {"family": "JetBrains Mono", "weight": 700, "google": true}
+ },
+ "style": {"border": 4, "shadow": 8, "radius": 18}
+}

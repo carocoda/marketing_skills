@@ -1,0 +1,73 @@
+{
+ "_about": "A worked example to read, not to run: the take, logos and photos do not exist. Times are seconds in the source take. Fields: references/edit-json.md.",
+ "title": "Example: workshop invite, founder talking to camera",
+ "name": "workshop-invite",
+ "version": "v3",
+ "source": "/path/to/IMG_1234.MOV",
+ "work": "work",
+ "out": "exports",
+ "fps": 30,
+ "language": "en",
+ "files": {
+  "picture": "sdr_prores.mov",
+  "faces": "faces.json",
+  "audio": "audio/src48.wav",
+  "voice": "audio/voice_warm.wav",
+  "words_whisper": "words_whisper.json",
+  "words_crisper": "words_crisper.json",
+  "music": "music/bed.mp3"
+ },
+ "whisper_prompt": "Northfield Studio, Sam, workflow.",
+ "music": {"end_beat": 292, "hit_beat": 308, "phrase": 16, "hit_after_endcard": 1.4},
+ "mix": {"duck_speech": -14.5, "duck_gap": -9.0, "endcard": -6.0},
+ "segments": [
+  {"id": "hook", "a": 0.80, "b": 3.60, "note": "You already use AI for a lot. But you still do so much yourself."},
+  {"id": "body", "a": 3.90, "b": 6.10, "note": "Copying, pasting, opening files, (uh 6.10-6.42 out, proven with frames.py + splice_probe.py)"},
+  {"id": "body2", "a": 6.62, "b": 8.40, "note": "jumping between ten different tools."},
+  {"id": "ai", "a": 8.62, "b": 11.30, "note": "What if AI picked all of that up for you?"},
+  {"id": "intro", "a": 11.50, "b": 14.20, "note": "I'm Sam, and I run Northfield Studio. (retake at 14.6-17.0 not used)"},
+  {"id": "date", "a": 17.20, "b": 20.80, "note": "On March 12 we run a one-day workshop. Are you in?"},
+  {"id": "offer", "a": 21.10, "b": 23.70, "note": "Early bird is 149 until February 28."},
+  {"id": "cta", "a": 24.00, "b": 25.90, "note": "Tap the link below."}
+ ],
+ "variants": {
+  "A-offer": {"segments": ["hook", "body", "body2", "ai", "intro", "date", "offer", "cta"], "flags": ["offer"]},
+  "B-evergreen": {"segments": ["hook", "body", "body2", "ai", "intro", "date", "cta"], "flags": []}
+ },
+ "formats": {
+  "9x16": {"w": 1080, "h": 1920, "zoom": {"1": 1.3, "2": 1.58, "3": 1.8}, "face_y": {"1": 0.32, "2": 0.34, "3": 0.36}},
+  "4x5": {"w": 1080, "h": 1350, "zoom": {"1": 1.1, "2": 1.36, "3": 1.56}, "face_y": {"1": 0.36, "2": 0.38, "3": 0.4}}
+ },
+ "shots": [[0.80, 2, "intro"], [2.10, 3], [3.90, 1], [6.62, 2], [8.62, 1], [11.50, 2], [17.20, 1], [21.10, 2], [24.00, 1]],
+ "captions": {"words": 3, "chars": 17, "uppercase": true},
+ "words_fix": [["North", "Northfield", 13.1], ["Sam.", "Sam,"]],
+ "words_at": [["yourself.", 3.0, 3.12]],
+ "words_drop": [["Thanks", 0.82]],
+ "words_add": [["You", 0.84]],
+ "voice_gain": [[19.9, 20.6, 4]],
+ "logos": ["assets/logo-tool-a.svg", "assets/logo-tool-b.svg"],
+ "photos": ["assets/photo-1.jpg", "assets/photo-2.jpg", "assets/photo-3.jpg", "assets/photo-4.jpg"],
+ "events": [
+  {"type": "hookbig", "from": 0.80, "to": 3.60},
+  {"type": "logos", "word": "AI", "near": 1.5, "to_word": "But", "to_near": 2.1, "sfx": ["pop"]},
+  {"type": "stamp", "word": "yourself.", "near": 3.1, "text": "YOURSELF.", "to": 3.6, "sfx": ["whoosh", "impact"]},
+  {"type": "win", "id": "w1", "word": "Copying,", "near": 4.0, "slot": "L1", "role": "copy", "rot": -5, "sfx": ["pop", "key"]},
+  {"type": "win", "id": "w2", "word": "pasting,", "near": 4.6, "slot": "R1", "role": "paste", "rot": 4, "sfx": ["soft_whoosh", "key"]},
+  {"type": "files", "id": "f1", "word": "files,", "near": 5.4, "slot": "L2", "rot": -4, "sfx": ["pop"]},
+  {"type": "apps", "id": "a1", "word": "tools.", "near": 7.9, "slot": "R2", "rot": 3},
+  {"type": "gather", "word": "AI", "near": 9.2, "ids": ["w1", "w2", "f1", "a1"], "sfx": ["whoosh"]},
+  {"type": "aicard", "word": "picked", "near": 9.5, "title": "AI HANDLES IT", "to_word": "you?", "to_near": 11.0, "sfx": ["chime"]},
+  {"type": "nametag", "word": "Sam,", "near": 11.9, "name": "SAM", "role": "founder", "to": 14.2, "sfx": ["pop"]},
+  {"type": "date", "word": "March", "near": 17.5, "kicker": "thursday", "title": "12 MAR", "sub": "one-day workshop", "to": 19.6, "sfx": ["slam"]},
+  {"type": "poll", "word": "Are", "near": 19.8, "q": "ARE YOU IN?", "yes": "YES!", "no": "NO", "sub": "seats are limited", "tap_word": "in?", "tap_near": 20.4, "tap_sfx": ["click"], "to": 20.8},
+  {"type": "price", "flag": "offer", "word": "Early", "near": 21.2, "kicker": "early bird", "value": "149", "tag": "until 28 Feb", "tag_word": "February", "tag_near": 23.0, "tag_sfx": ["stamp"], "ding_word": "149", "ding_near": 22.3, "to": 23.7, "sfx": ["slam"]},
+  {"type": "arrow", "word": "link", "near": 24.8, "text": "TAP BELOW", "to": 25.9, "sfx": ["whoosh"]}
+ ],
+ "endcard": {"at": 25.85, "dur": 2.6, "sfx": ["whoosh"],
+             "title": ["SHIP YOUR", "*FIRST*", "AI WORKFLOW", "IN 1 DAY"],
+             "when": "thu 12 mar · 10:00–16:00 · leeds",
+             "sticker": "early bird 149 · until 28 feb", "sticker_flag": "offer",
+             "cta": "SAVE YOUR SEAT →", "url": "northfield.example"},
+ "prefilter": "",
+ "grade": "eq=contrast=1.06:saturation=1.05:gamma=0.98,unsharp=5:5:0.45:5:5:0,vignette=angle=PI/5.5"
+}

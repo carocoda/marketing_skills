@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Brand tokens. window.load() overwrites them from brand.json / edit.json "brand"; these are the neutral defaults. */
+  :root { --bg:#F4F1EA; --ink:#111111; --paper:#FFFFFF; --accent:#FFD84D; --accent2:#9BE3C3; --accent3:#FF9E8A; --accent4:#C9D3FF;
+          --shc:#111111; --capfill:#FFFFFF; --caphl:#FFD84D; --bw:4px; --sh:8px; --rad:18px;
+          --display-font:'Archivo', sans-serif; --display-weight:800; --label-font:'JetBrains Mono', monospace; --label-weight:700; }
+  html, body { margin:0; padding:0; background:transparent; overflow:hidden; }
+  #stage { position:relative; overflow:hidden; }
+  .el { position:absolute; left:0; top:0; display:none; transform-origin:50% 50%; }
+  .box { border:var(--bw) solid var(--ink); box-shadow:var(--sh) var(--sh) 0 var(--shc); border-radius:var(--rad); }
+  .mono { font-family:var(--label-font); font-weight:var(--label-weight); letter-spacing:.04em; text-transform:uppercase; color:var(--ink); }
+  .grot { font-family:var(--display-font); font-weight:var(--display-weight); color:var(--ink); letter-spacing:-.03em; }
+
+  .logo img { display:block; height:44px; width:auto; }
+  .logo { padding:10px 16px; font-size:26px; letter-spacing:1px; background:var(--accent); border:3px solid var(--ink); box-shadow:5px 5px 0 var(--shc); white-space:nowrap; }
+
+  #cap { position:absolute; left:0; width:100%; text-align:center; display:none; transform-origin:50% 50%; }
+  #cap .line { display:inline-block; max-width:930px; }
+  #cap .w { display:inline-block; font-family:var(--display-font); font-weight:var(--display-weight); text-transform:uppercase;
+            font-size:68px; line-height:1.08; letter-spacing:-.01em; color:var(--capfill); margin:0 .13em;
+            -webkit-text-stroke:11px var(--ink); paint-order:stroke fill; text-shadow:5px 6px 0 var(--shc); }
+  #cap.big .w { font-size:84px; -webkit-text-stroke:13px var(--ink); }
+  #cap .w.on { color:var(--caphl); }
+  #cap.lower .w { text-transform:none; }
+  #cap .w.off { opacity:0; }
+
+  .stamp { padding:6px 42px 14px; background:var(--accent3); border-width:6px; box-shadow:14px 14px 0 var(--shc); border-radius:26px; font-size:230px; line-height:1; }
+
+  .chip { display:flex; align-items:center; gap:16px; padding:14px 22px 14px 14px; white-space:nowrap; }
+  .chip .cap { background:#fff; border:3px solid var(--ink); border-radius:10px; box-shadow:0 5px 0 var(--shc); padding:4px 14px 2px; font-size:44px; }
+  .chip .lbl { font-family:var(--display-font); font-weight:600; font-size:40px; color:var(--ink); }
+  .file .ico { display:block; flex:0 0 54px; width:54px; height:66px; background:var(--accent2); border:3px solid var(--ink); border-radius:6px; position:relative; }
+  .file .ico::after { content:'XLS'; position:absolute; bottom:6px; left:0; right:0; text-align:center; font:700 15px var(--label-font); }
+  .file .ico::before { content:''; position:absolute; right:-3px; top:-3px; width:18px; height:18px; background:var(--paper); border-left:3px solid var(--ink); border-bottom:3px solid var(--ink); }
+  .file .lbl { font-family:var(--label-font); font-weight:500; font-size:27px; }
+  .tab { padding:10px 22px; font-size:34px; border-radius:14px 14px 4px 4px; box-shadow:6px 6px 0 var(--shc); }
+
+  .card { padding:22px 40px 26px; text-align:center; white-space:nowrap; }
+  .card .t { font-size:84px; line-height:1; }
+  .card .s { font-size:32px; margin-top:12px; }
+
+  .date { padding:18px 56px 22px; text-align:center; background:var(--accent); }
+  .date .t { font-size:180px; line-height:.9; letter-spacing:-.045em; }
+  .date .s { font-size:34px; }
+  .pill { padding:12px 26px; border-radius:999px; font-size:46px; background:var(--accent2); white-space:nowrap; }
+
+  .tag { padding:18px 30px 20px; background:var(--accent2); }
+  .tag .t { font-size:96px; line-height:1; }
+  .tag .s { font-size:28px; margin-top:8px; }
+
+  .sticker img { width:300px; display:block; }
+  .sticker .lbl { position:absolute; left:50%; bottom:-14px; transform:translateX(-50%) rotate(-3deg); padding:8px 16px; font-size:24px; background:var(--accent); border:3px solid var(--ink); box-shadow:5px 5px 0 var(--shc); white-space:nowrap; }
+
+  .poll { width:780px; padding:28px 34px 30px; background:var(--paper); text-align:center; }
+  .poll .q { font-size:76px; line-height:1; }
+  .poll .row { display:flex; gap:22px; margin-top:24px; }
+  .poll .b { flex:1; padding:18px 0 16px; font-size:50px; border:4px solid var(--ink); border-radius:16px; box-shadow:6px 6px 0 var(--shc); }
+  .poll .ja { background:var(--accent); }
+  .poll .nee { background:var(--bg); }
+  .poll .ja.done { background:var(--accent2); }
+  .poll .sub { font-size:30px; margin-top:20px; }
+  .cursor { width:64px; height:64px; }
+
+  .price { padding:20px 52px 26px; background:var(--accent2); text-align:center; }
+  .price .k { font-size:40px; }
+  .price .v { font-size:200px; line-height:.92; letter-spacing:-.05em; }
+  .price .r { font-size:30px; margin-top:6px; }
+  .ptag { padding:12px 22px; font-size:40px; background:var(--accent); }
+
+  .arrow { text-align:center; }
+  .arrow .box { display:inline-block; padding:16px 34px 20px; background:var(--paper); font-size:64px; }
+  .arrow svg { display:block; margin:14px auto 0; }
+
+  /* visual opening kit */
+  .win { width:340px; background:var(--paper); border-radius:16px; overflow:visible; }
+  .win .bar { height:34px; border-bottom:4px solid var(--ink); display:flex; align-items:center; gap:8px; padding-left:12px; background:var(--bg); border-radius:13px 13px 0 0; }
+  .win .bar i { width:13px; height:13px; border-radius:50%; border:2.5px solid var(--ink); display:block; }
+  .win .body { padding:18px 18px 20px; display:flex; flex-direction:column; gap:13px; }
+  .win .ln { height:16px; border-radius:8px; background:#D9D9CF; position:relative; overflow:hidden; }
+  .win .ln .sel { position:absolute; left:0; top:0; bottom:0; background:var(--accent); border-radius:8px; box-shadow:inset 0 0 0 3px var(--ink); }
+  .win .ln.slot { background:transparent; border:3px dashed #B9B9AE; height:10px; }
+  .kbd { position:absolute; padding:6px 14px 3px; background:var(--paper); border:3px solid var(--ink); border-radius:12px; box-shadow:0 6px 0 var(--shc); font-size:38px; }
+  .clip { position:absolute; left:0; top:0; width:190px; height:22px; border-radius:11px; background:var(--accent); border:3px solid var(--ink); box-shadow:4px 4px 0 var(--shc); display:none; }
+  .fan { width:330px; height:210px; }
+  .doc { position:absolute; left:105px; top:20px; width:120px; height:150px; background:var(--paper); border:4px solid var(--ink); border-radius:10px; box-shadow:6px 6px 0 var(--shc); transform-origin:50% 100%; }
+  .doc::before { content:''; position:absolute; right:-4px; top:-4px; width:30px; height:30px; background:var(--bg); border-left:4px solid var(--ink); border-bottom:4px solid var(--ink); border-radius:0 8px 0 6px; }
+  .doc b { position:absolute; left:12px; top:48px; padding:3px 9px; border:3px solid var(--ink); border-radius:6px; font:700 22px var(--label-font); }
+  .doc u { position:absolute; left:14px; right:14px; height:8px; border-radius:4px; background:#D9D9CF; }
+  .apps { display:grid; grid-template-columns:repeat(3, 100px); gap:16px; }
+  .app { width:100px; height:100px; border:4px solid var(--ink); border-radius:26px; box-shadow:6px 6px 0 var(--shc); display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .chat { display:flex; align-items:flex-end; gap:12px; }
+  .chat .av { width:72px; height:72px; border-radius:50%; background:var(--accent4); border:4px solid var(--ink); box-shadow:4px 4px 0 var(--shc); display:flex; align-items:center; justify-content:center; flex:0 0 72px; box-sizing:border-box; }
+  .chat .bub { width:220px; height:96px; background:var(--paper); border:4px solid var(--ink); border-radius:26px 26px 26px 6px; box-shadow:6px 6px 0 var(--shc); position:relative; box-sizing:border-box; }
+  .chat .dot { position:absolute; top:38px; width:18px; height:18px; border-radius:50%; background:var(--ink); }
+  .chat .rl { position:absolute; left:22px; height:13px; border-radius:7px; background:#CFCFC4; }
+  .aicard { padding:24px 34px 26px; background:var(--accent3); display:flex; align-items:center; gap:26px; white-space:nowrap; }
+  .aicard .t { font-size:76px; line-height:1; }
+  .aicard .row { display:flex; gap:16px; margin-top:16px; }
+  .aicard .mini { width:70px; height:70px; border:4px solid var(--ink); border-radius:18px; background:var(--paper); display:flex; align-items:center; justify-content:center; position:relative; box-sizing:border-box; }
+  .aicard .ok { position:absolute; right:-14px; top:-14px; width:36px; height:36px; border-radius:50%; background:var(--accent2); border:3px solid var(--ink); font:700 22px var(--label-font); display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .ltile { width:170px; height:170px; background:var(--paper); border-radius:38px; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .ltile img { width:108px; height:108px; display:block; }
+  .try { display:flex; align-items:center; gap:16px; padding:14px 26px 14px 14px; background:var(--paper); white-space:nowrap; }
+  .try .ic { width:84px; height:84px; border:4px solid var(--ink); border-radius:22px; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .try .lbl { font-family:var(--display-font); font-weight:var(--display-weight); font-size:40px; color:var(--ink); letter-spacing:-.02em; }
+  .try .ok { position:absolute; right:-18px; top:-18px; width:52px; height:52px; border-radius:50%; background:var(--accent2); border:4px solid var(--ink); box-shadow:3px 3px 0 var(--shc); font:700 30px var(--label-font); display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .check { width:900px; padding:28px 36px 32px; background:var(--paper); }
+  .check .t { font-size:60px; line-height:1; margin-bottom:18px; }
+  .check .row { display:flex; align-items:center; gap:18px; margin-top:14px; }
+  .check .bx { flex:0 0 52px; height:52px; border:4px solid var(--ink); border-radius:12px; display:flex; align-items:center; justify-content:center; font:700 32px var(--label-font); box-sizing:border-box; background:var(--bg); }
+  .check .bx.on { background:var(--accent2); }
+  .check .tx { font-family:var(--display-font); font-weight:600; font-size:44px; color:var(--ink); }
+  .post { width:820px; padding:26px 30px 22px; background:var(--paper); }
+  .post .hd { display:flex; align-items:center; gap:18px; }
+  .post .av { width:78px; height:78px; border-radius:50%; background:var(--accent4); border:4px solid var(--ink); box-sizing:border-box; flex:0 0 78px; }
+  .post .nm { height:20px; width:230px; border-radius:10px; background:#3a3a3a; }
+  .post .sb { height:14px; width:150px; border-radius:7px; background:#cfcfc4; margin-top:10px; }
+  .post .tx { font-family:var(--display-font); font-weight:600; font-size:44px; line-height:1.15; color:var(--ink); margin:20px 0 18px; letter-spacing:-.02em; white-space:normal; }
+  .post .ft { display:flex; align-items:center; gap:14px; border-top:3px solid #e2e2d8; padding-top:14px; font:700 30px var(--label-font); color:var(--ink); }
+  .post .lk { width:44px; height:44px; border-radius:50%; background:var(--accent); border:3px solid var(--ink); display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .post .rc { margin-left:auto; font-weight:500; font-size:26px; color:#6b6b63; text-transform:none; }
+  .pstamp { padding:8px 26px 12px; background:var(--accent3); border-width:5px; box-shadow:10px 10px 0 var(--shc); border-radius:20px; font-size:96px; line-height:1; white-space:nowrap; }
+  .bub { display:flex; align-items:center; gap:16px; padding:16px 26px 16px 16px; background:var(--paper); max-width:480px; border-radius:28px 28px 28px 8px; }
+  .bub .ic { flex:0 0 78px; width:78px; height:78px; border:4px solid var(--ink); border-radius:18px; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+  .bub .tx { font-family:var(--display-font); font-weight:600; font-size:38px; line-height:1.12; color:var(--ink); letter-spacing:-.015em; white-space:normal; }
+  .strike { padding:18px 40px 22px; background:var(--paper); position:absolute; }
+  .strike .t { font-size:104px; line-height:1; letter-spacing:-.04em; color:var(--ink); white-space:nowrap; }
+  .strike .ln { position:absolute; left:-2%; top:54%; height:16px; background:var(--ink); border-radius:8px; transform:rotate(-2deg); transform-origin:0 50%; }
+  .pic { background:var(--paper); padding:10px; border-radius:10px; }
+  .pic img { display:block; border:3px solid var(--ink); border-radius:4px; }
+  .photo img { display:block; border:3px solid var(--ink); border-radius:4px; }
+  .photo .tape { position:absolute; left:50%; top:-26px; transform:translateX(-50%) rotate(3deg); padding:8px 18px; background:var(--accent); border:3px solid var(--ink); box-shadow:4px 4px 0 var(--shc); font-size:26px; white-space:nowrap; }
+
+  #end { position:absolute; left:0; top:0; display:none; background:var(--bg); }
+  #end .grid { position:absolute; inset:0; background-image:radial-gradient(var(--ink) 1.8px, transparent 2.2px); background-size:28px 28px; opacity:.13; }
+  #end .el { display:block; }
+  .h1 { font-size:132px; line-height:.95; letter-spacing:-.045em; text-transform:uppercase; white-space:nowrap; }
+  .hl { background:var(--accent3); padding:0 18px; border:4px solid var(--ink); box-shadow:8px 8px 0 var(--shc); border-radius:16px; display:inline-block; }
+  .eb { padding:14px 26px; font-size:38px; background:var(--accent2); white-space:nowrap; }
+  .cta { padding:24px 56px 26px; background:var(--accent); font-size:66px; border-radius:22px; white-space:nowrap; }
+  .url { font-size:30px; letter-spacing:.06em; text-transform:none; }
+  .when { padding:14px 28px; background:var(--paper); font-size:34px; border-radius:999px; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// Pure function of time: seek(t) sets every style from t alone, so frames render in any order, in parallel.
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const easeIn = k => k * k * k, easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+function spring(t, z = 0.55, f = 3.0) {
+  if (t <= 0) return 0;
+  const w = 2 * Math.PI * f, wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t));
+}
+// scale for an element that pops in at t0 and shrinks away at t1
+function pop(t, t0, t1, o = {}) {
+  const { z = 0.55, f = 3.0, from = 0, out = 0.16 } = o;
+  if (t < t0) return 0;
+  let s = from + (1 - from) * spring(t - t0, z, f);
+  if (t1 != null && t >= t1) { const k = clamp((t - t1) / out); if (k >= 1) return 0; s *= 1 - easeIn(k); }
+  return s;
+}
+function place(el, x, y, rot, s, ax = .5, ay = .5) {
+  if (s <= 0.002) { el.style.display = 'none'; return; }
+  el.style.display = el.dataset.disp || 'block';
+  el.style.transformOrigin = `${ax * 100}% ${ay * 100}%`;
+  el.style.transform = `translate(${x}px,${y}px) translate(${-ax * 100}%,${-ay * 100}%) rotate(${rot}deg) scale(${s})`;
+}
+// Shrink an element that would run off the frame (long words, wide brand fonts). Layout width ignores transforms.
+const fit = (el, maxw = 980) => { if (el.style.display === 'none') return 1; const w = el.offsetWidth; return w > maxw ? maxw / w : 1; };
+const placeFit = (el, x, y, rot, s, maxw) => { place(el, x, y, rot, s); if (s > 0.002) place(el, x, y, rot, s * fit(el, maxw)); };
+const mk = (html, parent) => { const d = document.createElement('div'); d.innerHTML = html.trim(); const e = d.firstChild; (parent || STAGE).appendChild(e); return e; };
+
+// Positions per format, inside the Meta safe zones (references/safe-zones.md). Change them here, not per event.
+const LAYOUTS = {
+  '9x16': { cap: 1150, zone: 1110, logo: [56, 300], slots: { L1: [52, 470, 0], R1: [1028, 440, 1], L2: [44, 790, 0], R2: [1036, 720, 1] },
+            sticker: [905, 470], gather: [540, 1110], chat: [1030, 470], photo: [540, 1070, 330], arrow: 1385, logos: [[175, 520, -8], [905, 490, 7]],
+            end: { logo: 300, h1: 520, when: 1000, eb: 1090, cta: 1195, url: 1290, image: [870, 330] } },
+  '4x5':  { cap: 1015, zone: 975, logo: [44, 44], slots: { L1: [40, 250, 0], R1: [1040, 230, 1], L2: [36, 540, 0], R2: [1044, 500, 1] },
+            sticker: [910, 280], gather: [540, 975], chat: [1040, 260], photo: [540, 925, 270], arrow: 1195, logos: [[165, 300, -8], [915, 280, 7]],
+            end: { logo: 100, h1: 330, when: 800, eb: 885, cta: 1000, url: 1100, image: [880, 140] } },
+};
+
+let STAGE, P, L, B, ITEMS = [], CAP, CAPS = [], HIDE = [], HOOK_END = 0, capIdx = -2, INK = '#111111', ACC = '#FFD84D', ACC3 = '#FF9E8A';
+
+// Colour in an event: a token name (bg, ink, paper, accent, accent2..4; old pastel names work too) or a hex code.
+const ALIAS = { yellow: 'accent', mint: 'accent2', pink: 'accent3', lilac: 'accent4', white: 'paper', cream: 'bg' };
+const col = (c, d = 'accent3') => { c = c || d; return c.startsWith('#') ? c : `var(--${ALIAS[c] || c})`; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+// Brand -> CSS variables and fonts. Fonts: Google Fonts by family name, or a local file ("file") via @font-face.
+const LINKS = [];
+function applyBrand(b) {
+  const c = b.colors, r = document.documentElement.style, st = b.style || {};
+  INK = c.ink; ACC = c.accent; ACC3 = c.accent3;
+  for (const k of ['bg', 'ink', 'paper', 'accent', 'accent2', 'accent3', 'accent4']) r.setProperty('--' + k, c[k]);
+  r.setProperty('--shc', c.shadow || c.ink);
+  r.setProperty('--capfill', c.caption || '#FFFFFF');
+  r.setProperty('--caphl', c.caption_active || c.accent);
+  r.setProperty('--bw', (st.border ?? 4) + 'px'); r.setProperty('--sh', (st.shadow ?? 8) + 'px'); r.setProperty('--rad', (st.radius ?? 18) + 'px');
+  const css = [];
+  for (const [k, f] of Object.entries(b.fonts)) {
+    const fam = f.file ? `brand-${k}` : f.family;
+    r.setProperty(`--${k}-font`, `'${fam}', ${k === 'label' ? 'monospace' : 'sans-serif'}`);
+    r.setProperty(`--${k}-weight`, f.weight || 700);
+    if (f.file) css.push(`@font-face { font-family:'brand-${k}'; src:url('${f.file}'); font-weight:100 900; font-display:block; }`);
+    else if (f.google !== false) {
+      const l = document.createElement('link'); l.rel = 'stylesheet';
+      l.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f.family).replace(/%20/g, '+')}:wght@500;600;${f.weight || 700}&display=block`;
+      LINKS.push(new Promise(res => { l.onload = l.onerror = res; }));
+      document.head.appendChild(l);
+    }
+  }
+  if (css.length) { const s = document.createElement('style'); s.textContent = css.join('\n'); document.head.appendChild(s); }
+}
+// The brand mark: the logo image if there is one, else the brand name as a text tag.
+const mark = (size = 26, h = 44) => B.logo ? `<img src="${B.logo}" style="height:${h}px">` : esc(B.name);
+const hasMark = () => !!(B.logo || B.name);
+
+// Simple ink glyphs for app tiles (no brand logos)
+const G = {
+  mail: '<rect x="8" y="16" width="48" height="34" rx="5"/><path d="M9 18 L32 36 L55 18"/>',
+  chart: '<path d="M10 54 H56"/><rect x="14" y="32" width="9" height="20" rx="2"/><rect x="28" y="20" width="9" height="32" rx="2"/><rect x="42" y="10" width="9" height="42" rx="2"/>',
+  cal: '<rect x="9" y="13" width="46" height="42" rx="6"/><path d="M9 25 H55 M21 8 V18 M43 8 V18"/><circle cx="22" cy="37" r="2.5"/><circle cx="32" cy="37" r="2.5"/><circle cx="42" cy="37" r="2.5"/><circle cx="22" cy="46" r="2.5"/>',
+  chat: '<path d="M10 14 H54 V42 H30 L18 52 V42 H10 Z"/>',
+  img: '<rect x="8" y="12" width="48" height="40" rx="5"/><circle cx="22" cy="25" r="5"/><path d="M10 48 L26 34 L36 42 L44 34 L55 46"/>',
+  web: '<rect x="6" y="10" width="52" height="44" rx="6"/><path d="M6 21 H58"/><circle cx="13" cy="15.5" r="1.5"/><circle cx="19" cy="15.5" r="1.5"/><rect x="13" y="28" width="22" height="18" rx="3"/><path d="M41 30 H51 M41 37 H51 M41 44 H48"/>',
+  play: '<rect x="6" y="12" width="52" height="40" rx="7"/><path d="M27 23 L42 32 L27 41 Z"/>',
+  clock: '<circle cx="32" cy="34" r="22"/><path d="M32 22 V34 L41 40 M24 8 H40"/>',
+  bot: '<rect x="12" y="20" width="40" height="32" rx="9"/><path d="M32 20 V11"/><circle cx="32" cy="9" r="3"/><circle cx="24" cy="35" r="3.5"/><circle cx="40" cy="35" r="3.5"/><path d="M25 44 H39"/>',
+  board: '<rect x="8" y="10" width="48" height="44" rx="5"/><path d="M24 10 V54 M40 10 V54"/><rect x="12" y="16" width="8" height="8" rx="2"/><rect x="28" y="16" width="8" height="14" rx="2"/><rect x="44" y="16" width="8" height="6" rx="2"/>',
+};
+const glyph = (k, s = 58) => `<svg width="${s}" height="${s}" viewBox="0 0 64 64" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">${G[k] || G.chat}</svg>`;
+const SPARK = (s, fill) => `<svg width="${s}" height="${s}" viewBox="0 0 100 100"><path d="M50 4 C54 34 66 46 96 50 C66 54 54 66 50 96 C46 66 34 54 4 50 C34 46 46 34 50 4 Z" fill="${fill || ACC}" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/></svg>`;
+
+window.load = function (p) {
+  P = p; L = LAYOUTS[p.fmt]; B = p.brand;
+  if (!L) throw new Error('no LAYOUTS entry for format ' + p.fmt);
+  applyBrand(B);
+  STAGE = document.getElementById('stage');
+  STAGE.style.width = p.w + 'px'; STAGE.style.height = p.h + 'px';
+  CAPS = p.captions;
+  CAP = mk('<div id="cap"></div>');
+  if (p.cap_style && p.cap_style.uppercase === false) CAP.classList.add('lower');
+  const endEv = p.events.find(e => e.type === 'endcard');
+
+  if (hasMark() && B.tag !== false) {               // brand tag in the corner, the whole video, until the end card
+    const logo = mk(`<div class="el mono logo">${mark()}</div>`);
+    ITEMS.push(t => place(logo, L.logo[0], L.logo[1], -1.5, pop(t, 0.12, endEv ? endEv.t0 + 0.25 : null, { z: .6 }), 0, 0));
+  }
+
+  const chips = {}, WINS = {};
+  for (const e of p.events) {
+    const zone = [540, L.zone];
+    if (e.type === 'hookbig') HOOK_END = e.t1;
+    // cards with key info replace the captions while they are on screen; chips next to the head leave them
+    if (['stamp', 'post', 'card', 'aicard', 'checklist', 'strike', 'photos', 'date', 'nametag', 'logo', 'poll', 'price', 'arrow', 'endcard'].includes(e.type))
+      HIDE.push([e.t0 - 0.05, (e.t1 ?? e.t0) + 0.08]);
+
+    if (e.type === 'stamp') {
+      const el = mk(`<div class="el grot box stamp" style="font-size:${Math.min(230, Math.round(860 / (0.6 * e.text.length)))}px">${e.text}</div>`);
+      ITEMS.push(t => {
+        if (t < e.t0 || t >= e.t1) return place(el, 0, 0, 0, 0);
+        const k = t - e.t0, s = 1 + 1.3 * (1 - spring(k, .5, 3.4));
+        placeFit(el, zone[0], zone[1] + 10, -6 + 4 * (1 - clamp(k / .25)), s, 960);
+      });
+    }
+
+    // gatherable visuals: placed in a slot, floating, sucked to the centre by a 'gather' event
+    const gatherable = (id, el, sx, sy, ax, rot, t0, extra) => {
+      const ph = sx * 0.01;
+      chips[id] = { gx: null, place: (t, gx) => {
+        let s = pop(t, t0, null, { z: .5, f: 3.2 }), x = sx, y = sy + 7 * Math.sin(2 * Math.PI * .45 * (t - t0) + ph), r = rot;
+        if (gx) {
+          const k = clamp((t - gx.t0) / .42), q = easeIn(k);
+          if (k >= 1) s = 0;
+          const tx = L.gather[0] - (ax ? -1 : 1) * 170, ty = L.gather[1];
+          x += (tx - x) * q; y += (ty - y) * q; s *= 1 - .85 * q; r += 40 * q * (ax ? -1 : 1);
+        }
+        place(el, x, y, r, s, ax, .5);
+        if (extra && s > 0) extra(t);
+      }};
+    };
+
+    if (e.type === 'chat') {
+      const el = mk(`<div class="el chat" data-disp="flex"><div class="av">${SPARK(44, '#FFFFFF')}</div><div class="bub">
+        <div class="dot" style="left:52px"></div><div class="dot" style="left:92px"></div><div class="dot" style="left:132px"></div>
+        <div class="rl" style="top:22px;width:160px"></div><div class="rl" style="top:42px;width:130px"></div><div class="rl" style="top:62px;width:90px"></div></div></div>`);
+      const dots = [...el.querySelectorAll('.dot')], rls = [...el.querySelectorAll('.rl')];
+      ITEMS.push(t => {
+        place(el, L.chat[0], L.chat[1], 3, pop(t, e.t0, e.t1, { z: .5, f: 3.2 }), 1, .5);
+        const typed = t - e.t0 > .42;
+        dots.forEach((d, i) => { d.style.display = typed ? 'none' : 'block'; d.style.transform = `translateY(${-9 * Math.max(0, Math.sin(2 * Math.PI * 2.6 * (t - e.t0) - i * .9))}px)`; });
+        rls.forEach((r, i) => { r.style.display = typed ? 'block' : 'none'; r.style.transformOrigin = '0 50%'; r.style.transform = `scaleX(${easeOut(clamp((t - e.t0 - .42 - .08 * i) / .2))})`; });
+      });
+    }
+
+    if (e.type === 'win') {
+      const copy = e.role === 'copy';
+      const el = mk(`<div class="el box win"><div class="bar"><i style="background:var(--accent3)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent2)"></i></div>
+        <div class="body"><div class="ln" style="width:92%"></div><div class="ln" style="width:78%">${copy ? '<div class="sel"></div>' : ''}</div>
+        <div class="ln${copy ? '' : ' slot'}" style="width:${copy ? 64 : 72}%">${copy ? '' : '<div class="sel"></div>'}</div><div class="ln" style="width:50%"></div></div>
+        <div class="kbd mono" style="${copy ? 'right:-26px' : 'left:-26px'};bottom:-30px">${copy ? '⌘C' : '⌘V'}</div></div>`);
+      const sel = el.querySelector('.sel'), kbd = el.querySelector('.kbd'), slot = el.querySelector('.slot');
+      const [sx, sy, ax] = L.slots[e.slot];
+      WINS[e.role] = { sx, sy };
+      const land = e.t0 + .42;
+      gatherable(e.id, el, sx, sy, ax, e.rot, e.t0, t => {
+        if (copy) sel.style.width = 100 * easeOut(clamp((t - e.t0 - .08) / .25)) + '%';
+        else { sel.style.width = t >= land ? '100%' : '0%'; slot.style.borderColor = t >= land ? 'transparent' : '#B9B9AE'; }
+        const ks = pop(t, copy ? e.t0 + .3 : land, null, { z: .45, f: 3.6 });
+        kbd.style.transform = `scale(${ks})`; kbd.style.opacity = ks > .01 ? 1 : 0;
+      });
+      if (!copy) {                                   // the copied line flies over in an arc
+        const clip = mk('<div class="clip"></div>');
+        ITEMS.push(t => {
+          const c = WINS.copy, k = (t - e.t0 - .02) / .4;
+          if (!c || k < 0 || k >= 1) { clip.style.display = 'none'; return; }
+          const x0 = c.sx + 170, y0 = c.sy + 4, x1 = sx - 170, y1 = sy + 40;
+          const q = easeInOut(k), x = x0 + (x1 - x0) * q, y = y0 + (y1 - y0) * q - 170 * Math.sin(Math.PI * q);
+          clip.style.display = 'block';
+          clip.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%) rotate(${-14 + 28 * q}deg)`;
+        });
+      }
+    }
+
+    if (e.type === 'files') {
+      const el = mk(`<div class="el fan">${[['XLS', 'var(--accent2)'], ['PDF', 'var(--accent3)'], ['DOC', 'var(--accent4)']].map(([n, c]) =>
+        `<div class="doc"><b style="background:${c}">${n}</b><u style="top:94px"></u><u style="top:110px;right:34px"></u><u style="top:126px;right:50px"></u></div>`).join('')}</div>`);
+      const docs = [...el.children], [sx, sy, ax] = L.slots[e.slot];
+      gatherable(e.id, el, sx, sy, ax, e.rot, e.t0, t => docs.forEach((d, i) => {
+        const s = pop(t, e.t0 + .1 * i, null, { z: .5, f: 3.4 });
+        d.style.transform = `translateX(${(i - 1) * 80 * s}px) rotate(${(i - 1) * 16 * s}deg) scale(${s})`;
+      }));
+    }
+
+    if (e.type === 'apps') {
+      const tiles = [['mail', 'var(--accent)'], ['chart', 'var(--accent2)'], ['cal', 'var(--paper)'], ['chat', 'var(--accent3)'], ['img', 'var(--accent4)'], ['board', 'var(--bg)']];
+      const el = mk(`<div class="el apps" data-disp="grid">${tiles.map(([k, c]) => `<div class="app" style="background:${c}">${glyph(k)}</div>`).join('')}</div>`);
+      const ts = [...el.children], [sx, sy, ax] = L.slots[e.slot];
+      gatherable(e.id, el, sx, sy, ax, e.rot, e.t0, t => ts.forEach((d, i) => {
+        const s = pop(t, e.t0 + .08 * i, null, { z: .45, f: 3.6 });
+        const jig = t > e.t0 + .6 ? 4 * Math.sin(2 * Math.PI * 2.6 * t + i * 1.7) : 0;   // restless: too many tools
+        d.style.transform = `rotate(${jig}deg) scale(${s})`;
+      }));
+    }
+
+    if (e.type === 'gather') {
+      for (const id of e.ids) if (chips[id]) chips[id].gx = e;
+    }
+
+    if (e.type === 'aicard') {
+      const el = mk(`<div class="el box aicard" data-disp="flex"><div class="sp">${SPARK(130)}</div><div><div class="grot t">${e.title}</div>
+        <div class="row">${['mail', 'chart', 'cal'].map(k => `<div class="mini">${glyph(k, 42)}<div class="ok">✓</div></div>`).join('')}</div></div></div>`);
+      const oks = [...el.querySelectorAll('.ok')], sp = el.querySelector('.sp');
+      ITEMS.push(t => {
+        place(el, zone[0], zone[1], -3, pop(t, e.t0, e.t1, { z: .5, f: 3.2 }));
+        oks.forEach((o, i) => { o.style.transform = `scale(${pop(t, e.t0 + .45 + .2 * i, null, { z: .45, f: 3.6 })})`; });
+        sp.style.transform = `rotate(${(t - e.t0) * 80}deg) scale(${1 + .08 * Math.sin(2 * Math.PI * 1.5 * (t - e.t0))})`;
+      });
+    }
+
+    if (e.type === 'bubble') {                        // what customers tell us: a speech bubble next to the head
+      const el = mk(`<div class="el box bub" data-disp="flex" style="max-width:${e.maxw || 480}px"><div class="ic" style="background:${col(e.color, 'accent3')}">${glyph(e.glyph || 'chat', 44)}</div><div class="tx">${e.text}</div></div>`);
+      const [sx, sy, ax] = (e.pos && e.pos[P.fmt]) || L.slots[e.slot];   // pos per format overrides the slot
+      gatherable(e.id, el, sx, sy, ax, e.rot || 0, e.t0, null);
+    }
+
+    if (e.type === 'strike') {                        // a word that gets crossed out on check_word
+      const el = mk(`<div class="el box strike"><div class="grot t">${e.text}</div><div class="ln"></div></div>`);
+      const ln = el.querySelector('.ln');
+      ITEMS.push(t => {
+        placeFit(el, zone[0], zone[1] - 20, -2, pop(t, e.t0, e.t1, { z: .55, f: 3.2 }), 960);
+        const k = e.check_t != null ? easeOut(clamp((t - e.check_t) / .22)) : 0;
+        ln.style.width = (106 * k) + '%';
+        el.style.opacity = 1 - .35 * k;
+      });
+    }
+
+    if (e.type === 'trycard') {                       // a try-out card next to the head, ticked on check_word
+      const el = mk(`<div class="el box try" data-disp="flex"><div class="ic" style="background:${col(e.color, 'accent')}">${glyph(e.glyph, 52)}</div><div class="lbl">${e.label}</div><div class="ok">✓</div></div>`);
+      const ok = el.querySelector('.ok'), [sx, sy, ax] = L.slots[e.slot];
+      gatherable(e.id, el, sx, sy, ax, e.rot, e.t0, t => {
+        const s = e.check_t != null ? pop(t, e.check_t, null, { z: .45, f: 3.6 }) : 0;
+        ok.style.transform = `scale(${s})`; ok.style.opacity = s > .01 ? 1 : 0;
+      });
+    }
+
+    if (e.type === 'checklist') {                     // what you take home, ticked off on the words
+      const el = mk(`<div class="el box check"><div class="grot t">${e.title}</div>${e.rows.map(([txt]) =>
+        `<div class="row"><div class="bx">✓</div><div class="tx">${txt}</div></div>`).join('')}</div>`);
+      const rows = [...el.querySelectorAll('.row')];
+      ITEMS.push(t => {
+        place(el, zone[0], zone[1] - 40, -2, pop(t, e.t0, e.t1, { z: .55, f: 3 }));
+        rows.forEach((r, i) => {
+          const rt = e.rows[i][1], on = rt != null && t >= rt;
+          r.style.opacity = on ? 1 : .28;
+          r.querySelector('.bx').classList.toggle('on', on);
+          const k = on ? pop(t, rt, null, { z: .45, f: 3.6 }) : 1;
+          r.querySelector('.bx').style.transform = `scale(${on ? k : 1})`;
+        });
+      });
+    }
+
+    if (e.type === 'post') {                          // a mock, anonymous feed post with a like counter running up
+      const el = mk(`<div class="el box post"><div class="hd"><div class="av"></div><div><div class="nm"></div><div class="sb"></div></div></div>
+        <div class="tx">${e.text}</div>
+        <div class="ft"><div class="lk"><svg width="24" height="24" viewBox="0 0 24 24" fill="${INK}"><path d="M2 10h4v12H2zM8 22h10.5a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 20 11h-6l1-5a2.2 2.2 0 0 0-4-1.4L8 10z"/></svg></div>
+        <span class="n">0</span><span class="rc">${e.comments || ''}</span></div></div>`);
+      const n = el.querySelector('.n'), target = e.likes || 2431;
+      ITEMS.push(t => {
+        const s = pop(t, e.t0, e.t1, { z: .55, f: 3.2 });
+        place(el, zone[0], zone[1] - 30, -2, s);
+        const k = easeOut(clamp((t - e.t0 - .25) / 1.6));
+        n.textContent = Math.round(target * k).toLocaleString(B.locale || undefined);
+      });
+      if (e.stamp && e.stamp_t != null) {
+        const st = mk(`<div class="el grot box pstamp">${e.stamp}</div>`);
+        ITEMS.push(t => {
+          if (t < e.stamp_t || t >= e.t1) return place(st, 0, 0, 0, 0);
+          const k = t - e.stamp_t, sc = 1 + 1.1 * (1 - spring(k, .5, 3.6));
+          place(st, zone[0] + 250, zone[1] + 150, 8 - 4 * (1 - clamp(k / .25)), sc);
+        });
+      }
+    }
+
+    if (e.type === 'logos' && P.logos.length) {      // logos of the tools or partners that are named (files from edit.json "logos")
+      P.logos.forEach((src, i) => {                   // left, right, then a row lower
+        const [x, y0, rot] = L.logos[i % 2], y = y0 + 210 * Math.floor(i / 2);
+        const el = mk(`<div class="el box ltile" data-disp="flex"><img src="${src}"></div>`);
+        const t0 = e.t0 + .14 * i;
+        ITEMS.push(t => place(el, x, y + 8 * Math.sin(2 * Math.PI * .6 * (t - t0) + i * 2),
+                              rot + 10 * (1 - easeOut(clamp((t - t0) / .35))), pop(t, t0, e.t1, { z: .45, f: 3.4 })));
+      });
+    }
+
+    if (e.type === 'photos' && P.photos.length) {     // real photos pop up, in their own aspect ratio, no text on them
+      const [cx, cy, pw] = L.photo;
+      const spots = [[-205, -80, -8], [205, -100, 7], [-175, 150, 5], [210, 145, -6]];
+      P.photos.forEach(([src, iw, ih], i) => {
+        const [dx, dy, rot] = spots[i % 4], k = pw / 330;
+        const area = pw * pw * 1.2, w = Math.round(Math.sqrt(area * iw / ih)), h = Math.round(w * ih / iw);
+        const el = mk(`<div class="el box pic"><img src="${src}" style="width:${w}px;height:${h}px;object-fit:cover"></div>`);
+        const t0 = e.t0 + .28 * i;
+        ITEMS.push(t => {
+          const rise = t >= t0 ? Math.max(0, (1 - spring(t - t0, .7, 2.8)) * 160) : 0;
+          place(el, cx + dx * k, cy + dy * k + rise, rot + 8 * (1 - easeOut(clamp((t - t0) / .4))),
+                pop(t, t0, e.t1 + .05 * i, { z: .55, f: 3, from: .5 }));
+        });
+      });
+    }
+
+    if (e.type === 'card') {
+      const el = mk(`<div class="el box card" style="background:${col(e.color, 'accent4')}"><div class="grot t">${e.title}</div><div class="mono s">${e.sub || ''}</div></div>`);
+      ITEMS.push(t => place(el, zone[0], zone[1], e.rot, pop(t, e.t0, e.t1, { z: .5, f: 3.2 })));
+    }
+
+    if (e.type === 'date') {
+      const el = mk(`<div class="el box date"><div class="mono s">${e.kicker || ''}</div><div class="grot t">${e.title}</div><div class="mono s">${e.sub || ''}</div></div>`);
+      ITEMS.push(t => {
+        let s = pop(t, e.t0, e.t1, { z: .5, f: 3.4 });
+        if (t >= e.t0 && t < e.t1) s *= 1 + .5 * (1 - spring(t - e.t0, .6, 4));
+        place(el, zone[0], zone[1] - 30, -3, t < e.t0 ? 0 : s);
+      });
+    }
+    if (e.type === 'timechip') {
+      const el = mk(`<div class="el mono box pill">${e.text}</div>`);
+      ITEMS.push(t => place(el, zone[0] + 150, zone[1] + 150, 4, pop(t, e.t0, e.t1, { z: .5, f: 3.4 })));
+    }
+
+    if (e.type === 'nametag') {
+      const el = mk(`<div class="el box tag"><div class="grot t">${e.name}</div><div class="mono s">${e.role}</div></div>`);
+      ITEMS.push(t => {
+        const s = pop(t, e.t0, e.t1, { z: .6, f: 3 });
+        const slide = (1 - easeOut(clamp((t - e.t0) / .3))) * -120;
+        place(el, 60 + slide, zone[1], -2, s, 0, .5);
+      });
+    }
+
+    if (e.type === 'sticker' && e.image) {           // a cut-out image (the founders, a product) with a label
+      const el = mk(`<div class="el sticker"><img src="${e.image}" style="width:${e.width || 300}px">${e.label ? `<div class="lbl mono">${e.label}</div>` : ''}</div>`);
+      const [x, y] = (e.pos && e.pos[P.fmt]) || L.sticker;
+      ITEMS.push(t => place(el, x, y, e.rot ?? 6, pop(t, e.t0, e.t1, { z: .5, f: 3 })));
+    }
+
+    if (e.type === 'logo' && hasMark()) {             // the brand mark, big, with an optional sticker line
+      const el = mk(`<div class="el"><div class="mono logo" style="font-size:66px;padding:22px 34px;border-width:4px;box-shadow:12px 12px 0 var(--shc)">${mark(66, 110)}</div>
+        ${e.sub ? `<div class="mono box" style="position:absolute;right:-20px;bottom:-56px;background:var(--accent3);padding:10px 20px;font-size:32px;transform:rotate(4deg)">${e.sub}</div>` : ''}</div>`);
+      ITEMS.push(t => {
+        let s = pop(t, e.t0, e.t1, { z: .5, f: 3.4 });
+        if (t >= e.t0 && t < e.t1) s *= 1 + .6 * (1 - spring(t - e.t0, .6, 4));
+        place(el, zone[0], zone[1] - 20, -2, t < e.t0 ? 0 : s);
+      });
+    }
+
+    if (e.type === 'poll') {
+      const el = mk(`<div class="el box poll"><div class="grot q">${e.q}</div>
+        <div class="row"><div class="b mono ja">${e.yes || 'YES!'}</div><div class="b mono nee">${e.no || 'NO'}</div></div>
+        <div class="mono sub">${e.sub || ''}</div></div>`);
+      const cur = mk(`<div class="el cursor"><svg viewBox="0 0 64 64" width="64" height="64"><path d="M14 6 L14 52 L26 41 L34 59 L42 55 L34 38 L50 38 Z" fill="${INK}" stroke="#fff" stroke-width="4" stroke-linejoin="round" transform="translate(4 4)" opacity=".35"/><path d="M14 6 L14 52 L26 41 L34 59 L42 55 L34 38 L50 38 Z" fill="${INK}" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></div>`);
+      const ja = el.querySelector('.ja'), sub = el.querySelector('.sub');
+      ITEMS.push(t => {
+        place(el, zone[0], zone[1], -2, pop(t, e.t0, e.t1, { z: .5, f: 3.2 }));
+        const tap = e.tap_t;
+        const done = t >= tap;
+        ja.classList.toggle('done', done);
+        ja.textContent = done ? '✓ ' + (e.yes || 'YES!') : (e.yes || 'YES!');
+        sub.style.opacity = done ? 1 : 0;
+        const pressK = clamp((t - tap + .06) / .12);
+        ja.style.transform = `translate(${pressK > 0 && pressK < 1 ? 4 : 0}px,${pressK > 0 && pressK < 1 ? 4 : 0}px)`;
+        ja.style.boxShadow = pressK > 0 && pressK < 1 ? '2px 2px 0 var(--shc)' : '6px 6px 0 var(--shc)';
+        // cursor glides in, clicks YES, leaves
+        const a = tap - .65, k = clamp((t - a) / .55), tx = zone[0] - 160, ty = zone[1] + 50;
+        const x = 1000 + (tx - 1000) * easeInOut(k), y = (zone[1] + 420) + (ty - (zone[1] + 420)) * easeInOut(k);
+        const press = t >= tap - .04 && t < tap + .1 ? .86 : 1;
+        const vis = t >= a && t < Math.min(e.t1, tap + .9);
+        place(cur, x, y, 0, vis ? press : 0, .2, .1);
+      });
+    }
+
+    if (e.type === 'price') {
+      const el = mk(`<div class="el box price"><div class="mono k">${e.kicker || ''}</div><div class="grot v">${e.value}</div></div>`);
+      const tg = mk(`<div class="el mono box ptag">${e.tag || ''}</div>`);
+      ITEMS.push(t => {
+        let s = pop(t, e.t0, e.t1, { z: .5, f: 3.4 });
+        if (t >= e.t0 && t < e.t1) s *= 1 + .5 * (1 - spring(t - e.t0, .6, 4));
+        if (e.ding_t && t >= e.ding_t) s *= 1 + .07 * Math.sin(Math.PI * clamp((t - e.ding_t) / .22));
+        place(el, zone[0], zone[1] - 10, -4, t < e.t0 ? 0 : s);
+        place(tg, zone[0] + 230, zone[1] - 175, 8, e.tag_t != null && e.tag ? pop(t, e.tag_t, e.t1, { z: .45, f: 3.6 }) : 0);
+      });
+    }
+
+    if (e.type === 'arrow') {
+      const el = mk(`<div class="el arrow"><div class="grot box">${e.text}</div>
+        <svg width="110" height="130" viewBox="0 0 110 130"><path d="M40 6 H70 V70 H100 L55 124 L10 70 H40 Z" fill="${INK}" transform="translate(6 6)"/><path d="M40 6 H70 V70 H100 L55 124 L10 70 H40 Z" fill="${ACC3}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/></svg></div>`);
+      ITEMS.push(t => {
+        const bob = 14 * Math.abs(Math.sin(Math.PI * 1.6 * (t - e.t0)));
+        place(el, zone[0], L.arrow + bob, -2, pop(t, e.t0, e.t1, { z: .5, f: 3.2 }));
+      });
+    }
+
+    if (e.type === 'endcard') buildEnd(e);
+  }
+  for (const c of Object.values(chips)) ITEMS.push(t => c.place(t, c.gx));
+
+  const fam = k => B.fonts[k].file ? `brand-${k}` : B.fonts[k].family;
+  const spec = k => `${B.fonts[k].weight || 700} 40px '${fam(k)}'`;
+  Promise.all(LINKS).then(() => Promise.all(['display', 'label'].map(k => document.fonts.load(spec(k)).catch(() => []))))
+    .then(() => document.fonts.ready).then(() => {
+    const ok = ['display', 'label'].every(k => [...document.fonts].some(f => f.family.replace(/["']/g, '') === fam(k) && f.status === 'loaded'));
+    const img = [...document.images];
+    Promise.all(img.map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => {
+      window.FONTS_OK = ok; window.READY = true;
+    });
+  });
+};
+
+// End card texts come from edit.json "endcard" (cta and url fall back to the brand); *word* in a title line gets
+// the accent3 highlight. "when" is optional, "sticker" only shows in variants with "sticker_flag", "image" is an
+// optional cut-out (the people, a product) in the top right.
+function buildEnd(e) {
+  const E = L.end, W = P.w, H = P.h, C = P.end;
+  const title = (C.title || []).map(l => l.replace(/\*(.+?)\*/g, '<span class="hl">$1</span>')).join('<br>');
+  const sticker = C.sticker && (!C.sticker_flag || P.flags.includes(C.sticker_flag));
+  const root = mk(`<div id="end"><div class="grid"></div></div>`);
+  root.style.width = W + 'px'; root.style.height = H + 'px';
+  const parts = [];
+  if (hasMark()) parts.push([mk(`<div class="el mono logo" style="font-size:34px">${mark(34, 64)}</div>`, root), 540, E.logo, -1.5, .30]);
+  parts.push([mk(`<div class="el grot h1" style="text-align:center">${title}</div>`, root), 540, E.h1 + 190, 0, .38]);
+  if (C.when) parts.push([mk(`<div class="el mono box when">${C.when}</div>`, root), 540, E.when, -1, .50]);
+  if (sticker) parts.push([mk(`<div class="el mono box eb">${C.sticker}</div>`, root), 540, E.eb, 3, .58]);
+  const up = sticker ? 0 : E.eb - E.when - 10;          // no sticker (evergreen): close the gap
+  parts.push([mk(`<div class="el grot box cta">${C.cta || B.cta || 'LEARN MORE →'}</div>`, root), 540, E.cta - up, -1, .66]);
+  const url = C.url ?? B.url;
+  if (url) parts.push([mk(`<div class="el mono url">${url}</div>`, root), 540, E.url - up, 0, .72]);
+  if (C.image) parts.push([mk(`<div class="el sticker"><img src="${C.image}" style="width:230px"></div>`, root), E.image[0], E.image[1], 7, .44]);
+  ITEMS.push(t => {
+    if (t < e.t0) { root.style.display = 'none'; return; }
+    root.style.display = 'block';
+    const k = t - e.t0, y = H * (1 - spring(k, .82, 2.4));
+    root.style.transform = `translateY(${Math.max(0, y)}px)`;
+    for (const [el, x, yy, rot, d] of parts) place(el, x, yy, rot, pop(t, e.t0 + d, null, { z: .5, f: 3.2 }));
+    // CTA press at +1.0 s, the chime moment
+    const cta = parts.find(p => p[0].classList.contains('cta'))[0];
+    const pk = t - (e.t0 + 1.0);
+    cta.style.boxShadow = pk > 0 && pk < .12 ? '3px 3px 0 var(--shc)' : '8px 8px 0 var(--shc)';
+    cta.style.marginLeft = cta.style.marginTop = pk > 0 && pk < .12 ? '5px' : '0';
+  });
+}
+
+function captions(t) {
+  const hidden = HIDE.some(([a, b]) => t >= a && t < b);
+  let i = CAPS.findIndex(c => t >= c.t0 && t < c.t1);
+  if (hidden) i = -1;
+  if (i !== capIdx) {
+    capIdx = i;
+    CAP.innerHTML = i < 0 ? '' : '<span class="line">' + CAPS[i].words.map(w => `<span class="w">${w.w}</span>`).join('') + '</span>';
+  }
+  if (i < 0) { CAP.style.display = 'none'; return; }
+  const c = CAPS[i];
+  CAP.classList.toggle('big', t < HOOK_END);
+  [...CAP.querySelectorAll('.w')].forEach((el, j) => {
+    const wt = c.words[j].t, nt = j + 1 < c.words.length ? c.words[j + 1].t : c.t1;
+    el.classList.toggle('on', t >= wt - .03 && t < nt - .03);
+    el.classList.toggle('off', t < wt - .1 && t < HOOK_END);   // hook: words build up one by one
+  });
+  const s = .86 + .14 * spring(t - c.t0, .6, 4.2);
+  CAP.style.display = 'block';
+  CAP.style.top = L.cap + 'px';
+  CAP.style.transform = `translateY(-50%) scale(${s})`;
+}
+
+window.seek = function (t) {
+  for (const f of ITEMS) f(t);
+  captions(t);
+};
+</script>
+</body>
+</html>
