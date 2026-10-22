@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+/* BRAND: change these to the user's colours and font (from shorts-profile.md). */
+:root{--brand:#1E40AF;--brand2:#3B6BF0;--accent:#93B4FF;--ink:#0b1220;--mid:#3a4453;--soft:#DBEAFE;--pill:#F1F5FB;
+ --track:#EEF2F7;--track2:#CBD5E1;--muted:#64748b;--line:rgba(15,23,42,.07);--sh:0 22px 70px rgba(15,23,42,.28);
+ --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
+body{background:transparent;font-family:var(--font)}
+.card{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:var(--sh);position:absolute}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--brand);font-weight:800;font-size:17px;letter-spacing:.7px;border-radius:999px;padding:7px 16px;text-transform:uppercase}
+.h{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.15}
+.sub{font-size:21px;font-weight:600;color:var(--mid);margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font-size:23px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0}
+.pill .d{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+.num{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.hdr{display:flex;align-items:center;gap:18px}
+.dash{stroke:var(--brand);stroke-width:6;fill:none;stroke-dasharray:16 12;stroke-linecap:round}
+.ah{fill:var(--brand)}
+.mini{width:220px;height:150px;padding:22px 22px;opacity:0}
+.mini .k{font-size:16px;font-weight:800;letter-spacing:.7px;color:var(--brand);text-transform:uppercase}
+.mini .t{font-size:27px;font-weight:800;color:var(--ink);margin-top:8px;letter-spacing:-.5px;line-height:1.1}
+#badge,#badge2{position:absolute;left:360px;top:60px;width:170px;height:150px;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:var(--sh);opacity:0;background:var(--brand);color:#fff}
+#badge2{background:var(--muted)}
+#res2{color:#475569}
+#badge .ic,#badge2 .ic{font-size:54px;font-weight:800;line-height:1}
+#badge .bt,#badge2 .bt{font-size:24px;font-weight:800;letter-spacing:.5px}
+#res,#res2{position:absolute;left:265px;top:330px;width:360px;border-radius:999px;padding:16px 26px;font-size:27px;font-weight:800;text-align:center;box-shadow:var(--sh);opacity:0;background:#fff;color:var(--ink);border:1px solid var(--line)}
+</style></head><body>
+<div id="root" data-composition-id="match" data-start="0" data-width="890" data-height="470" data-duration="13.7" style="width:890px;height:470px;position:relative">
+ <div id="scene" class="clip" data-start="0" data-duration="13.7" data-track-index="0" style="position:absolute;inset:0">
+  <div id="a" class="card mini" style="left:20px;top:60px"><div class="k">Signal 1</div><div class="t">The reader</div></div>
+  <div id="b" class="card mini" style="left:650px;top:60px"><div class="k">Signal 2</div><div class="t">The email<br>+ the sender</div></div>
+  <svg id="ar1" style="position:absolute;left:246px;top:100px;opacity:0" width="110" height="70" viewBox="0 0 110 70"><path class="dash" d="M4 35 H80"/><polygon class="ah" points="106,35 80,22 80,48"/></svg>
+  <svg id="ar2" style="position:absolute;left:534px;top:100px;opacity:0" width="110" height="70" viewBox="0 0 110 70"><path class="dash" d="M106 35 H30"/><polygon class="ah" points="4,35 30,22 30,48"/></svg>
+  <div id="badge"><div class="ic"><svg width="58" height="54" viewBox="0 0 58 54"><path d="M8 30 L22 44 L50 10" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="bt">MATCH</div></div>
+  <div id="badge2"><div class="ic"><svg width="54" height="54" viewBox="0 0 54 54"><path d="M10 10 L44 44 M44 10 L10 44" stroke="#fff" stroke-width="8" stroke-linecap="round"/></svg></div><div class="bt">NO MATCH</div></div>
+  <svg id="ar3" style="position:absolute;left:415px;top:216px;opacity:0" width="60" height="110" viewBox="0 0 60 110"><path class="dash" d="M30 4 V78"/><polygon class="ah" points="30,104 17,78 43,78"/></svg>
+  <div id="res">Lands in the inbox</div>
+  <div id="res2">Goes to spam</div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#a',{opacity:0,x:-30},{opacity:1,x:0,duration:.45,ease:'power3.out'},0.1);
+tl.fromTo('#b',{opacity:0,x:30},{opacity:1,x:0,duration:.45,ease:'power3.out'},3.7);
+tl.to('#ar1,#ar2',{opacity:1,duration:.3},4.9);
+tl.to('#ar1 .dash',{strokeDashoffset:-392,duration:8.4,ease:'none'},4.9);
+tl.to('#ar2 .dash',{strokeDashoffset:392,duration:8.4,ease:'none'},4.9);
+tl.fromTo('#badge',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.45,ease:'back.out(2)'},5.65);
+tl.to('#ar3',{opacity:1,duration:.3},6.9);
+tl.to('#ar3 .dash',{strokeDashoffset:-308,duration:6.6,ease:'none'},6.9);
+tl.fromTo('#res',{opacity:0,y:14},{opacity:1,y:0,duration:.4,ease:'power3.out'},7.05);
+// flip to no match at 10.2
+tl.to('#badge',{opacity:0,duration:.3},8.9);tl.to('#badge2',{opacity:1,duration:.3},8.9);
+tl.to('#res',{opacity:0,duration:.3},8.95);tl.to('#res2',{opacity:1,duration:.3},8.95);
+tl.to('#ar1,#ar2,#ar3',{opacity:.35,duration:.4},9);
+tl.to({},{duration:.1},13.6);
+window.__timelines=window.__timelines||{};window.__timelines['match']=tl;
+</script></body></html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+  /* END SCREEN, "Watch the full video on YouTube".
+     Change only the BRAND block and the four texts marked TEXT below.
+     Default size is 9:16 (1080x1920). For 16:9: set data-width/height and the root size to 1920x1080,
+     and change the layout block marked 16:9. */
+  :root{
+    /* BRAND */
+    --bg:#F6F5F1; --ink:#111827; --mid:#374151; --card:#ffffff; --accent:#FF0033;
+    --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font)}
+  #head{position:absolute;left:80px;right:80px;top:330px;text-align:center;font-weight:800;color:var(--ink);font-size:96px;line-height:1.08;letter-spacing:-.02em}
+  #head .yt{display:inline-block;background:var(--accent);color:#fff;border-radius:22px;padding:4px 30px 12px;line-height:1.05;margin-top:12px}
+  #vcard{position:absolute;left:70px;top:820px;width:940px;height:300px;background:var(--card);border-radius:30px;
+         border:1px solid rgba(15,23,42,.07);box-shadow:0 26px 80px rgba(15,23,42,.22);display:flex;align-items:center;gap:36px;padding:0 44px}
+  #play{width:150px;height:150px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+  #play svg{width:64px;height:64px;margin-left:8px}
+  #vt{font-size:42px;font-weight:800;color:var(--ink);line-height:1.15;letter-spacing:-.01em}
+  #vs{font-size:30px;color:var(--mid);margin-top:12px;font-weight:600}
+  #cta{position:absolute;left:0;right:0;top:1200px;text-align:center;font-size:40px;font-weight:700;color:var(--mid)}
+  #cursor{position:absolute;left:0;top:0;width:64px;height:64px}
+  /* 16:9 layout: #head{top:150px;font-size:84px} #vcard{left:400px;top:470px;width:1120px} #cta{top:840px} */
+</style></head>
+<body>
+<div id="root" data-composition-id="end-screen" data-start="0" data-width="1080" data-height="1920" data-duration="4.5" style="position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--bg)">
+  <div id="scene" class="clip" data-start="0" data-duration="4.5" data-track-index="0" style="position:absolute;inset:0">
+    <!-- TEXT 1: headline -->
+    <div id="head">Watch the full video<br>on <span class="yt">YouTube</span></div>
+    <div id="vcard">
+      <div id="play"><svg viewBox="0 0 24 24"><path d="M6 3.5v17l14-8.5z" fill="#fff"/></svg></div>
+      <div>
+        <!-- TEXT 2: the long video's title -->
+        <div id="vt">The title of your long video</div>
+        <!-- TEXT 3: channel or link -->
+        <div id="vs">youtube.com/@yourchannel</div>
+      </div>
+    </div>
+    <!-- TEXT 4: where the link is ("Link in the comments", "Link in bio") -->
+    <div id="cta">Link in the comments</div>
+    <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2 L4 20 L9 15.5 L12.5 22 L15.5 20.5 L12 14 L18.5 14 Z" fill="#fff" stroke="#0b1220" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused:true });
+    gsap.set("#cursor", { x:760, y:1700, autoAlpha:0 });
+    gsap.set("#play", { transformOrigin:"50% 50%" });
+    tl.from("#head", { autoAlpha:0, y:28, duration:0.5, ease:"power3.out" }, 0.15)
+      .from("#vcard", { autoAlpha:0, y:40, scale:0.94, duration:0.5, ease:"back.out(1.6)" }, 0.6)
+      .to("#cursor", { autoAlpha:1, duration:0.2 }, 1.4)
+      .to("#cursor", { x:170, y:950, duration:0.7, ease:"power2.inOut" }, 1.45)
+      .to("#cursor", { scale:0.82, duration:0.1, yoyo:true, repeat:1, transformOrigin:"20% 10%" }, 2.2)
+      .fromTo("#play", { scale:1 }, { scale:1.18, duration:0.2, ease:"back.out(3)", yoyo:true, repeat:1 }, 2.25)
+      .from("#cta", { autoAlpha:0, y:14, duration:0.4, ease:"power2.out" }, 2.3)
+      .to("#cursor", { x:760, y:1700, autoAlpha:0, duration:0.6, ease:"power2.in" }, 3.2)
+      .to({}, { duration:0.1 }, 4.4);
+    window.__timelines["end-screen"] = tl;
+  </script>
+</div>
+</body></html>

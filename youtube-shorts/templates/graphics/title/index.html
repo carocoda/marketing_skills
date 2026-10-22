@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+/* BRAND: change these to the user's colours and font (from shorts-profile.md). */
+:root{--brand:#1E40AF;--brand2:#3B6BF0;--accent:#93B4FF;--ink:#0b1220;--mid:#3a4453;--soft:#DBEAFE;--pill:#F1F5FB;
+ --track:#EEF2F7;--track2:#CBD5E1;--muted:#64748b;--line:rgba(15,23,42,.07);--sh:0 22px 70px rgba(15,23,42,.28);
+ --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
+body{background:transparent;font-family:var(--font)}
+.card{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:var(--sh);position:absolute}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--brand);font-weight:800;font-size:17px;letter-spacing:.7px;border-radius:999px;padding:7px 16px;text-transform:uppercase}
+.h{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.15}
+.sub{font-size:21px;font-weight:600;color:var(--mid);margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font-size:23px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0}
+.pill .d{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+.num{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.hdr{display:flex;align-items:center;gap:18px}
+.dash{stroke:var(--brand);stroke-width:6;fill:none;stroke-dasharray:16 12;stroke-linecap:round}
+.ah{fill:var(--brand)}
+.wd{display:inline-block;opacity:0}
+</style></head><body>
+<div id="root" data-composition-id="title" data-start="0" data-width="900" data-height="230" data-duration="4.6" style="width:900px;height:230px;position:relative">
+ <div id="scene" class="clip" data-start="0" data-duration="4.6" data-track-index="0" style="position:absolute;inset:0">
+  <div id="tcard" style="position:absolute;left:20px;top:20px;width:860px;height:190px;border-radius:24px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--sh);padding:30px 48px;overflow:hidden;opacity:0">
+   <div style="font-size:46px;font-weight:800;color:#fff;letter-spacing:-.8px;line-height:1.15;display:flex;flex-wrap:wrap;gap:0 13px">
+    <span class="wd">How</span><span class="wd">open</span><span class="wd">rates</span><span class="wd">are</span><span class="wd">really</span><span class="wd">measured</span>
+   </div>
+   <div id="sl" style="font-size:22px;font-weight:600;color:#fff;margin-top:10px;opacity:0">Explained in one minute</div>
+   <div id="ul" style="position:absolute;left:0;top:0;height:7px;width:0;background:var(--accent);border-radius:0 4px 4px 0"></div>
+  </div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#tcard',{opacity:0,scale:.94,y:18},{opacity:1,scale:1,y:0,duration:.45,ease:'power3.out'},0);
+tl.fromTo('.wd',{opacity:0,y:26},{opacity:1,y:0,duration:.4,stagger:.08,ease:'power3.out'},.25);
+tl.fromTo('#sl',{opacity:0,y:10},{opacity:1,y:0,duration:.4},1.0);
+tl.to('#ul',{width:860,duration:1.4,ease:'power2.out'},.6);
+tl.to({},{duration:.1},4.5);
+window.__timelines=window.__timelines||{};window.__timelines['title']=tl;
+</script></body></html>

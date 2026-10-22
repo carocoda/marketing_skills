@@ -1,0 +1,79 @@
+{
+ "src": "work/clip.mp4",
+ "out": "Short 1 - How open rates are really measured.mp4",
+ "work": "work",
+ "brand": {
+  "primary": "#1E40AF",
+  "secondary": "#3B6BF0",
+  "ink": "#0B1220",
+  "mid": "#3A4453",
+  "bg": "#F6F5F1",
+  "font": null
+ },
+ "captions": {
+  "words": "work/words.json",
+  "style": "bold",
+  "highlight": "#FFD400",
+  "fill": "#FFFFFF"
+ },
+ "title": {
+  "movie": "hf/title/renders/title.mov",
+  "t0": 0.0,
+  "t1": 4.6,
+  "pos": [
+   90,
+   220
+  ],
+  "w": 900
+ },
+ "elements": [
+  {
+   "path": "hf/feed/renders/feed.mov",
+   "t0": 14.0,
+   "t1": 24.0,
+   "pos": [
+    90,
+    300
+   ],
+   "w": 900,
+   "fade": 0.3
+  },
+  {
+   "path": "hf/match/renders/match.mov",
+   "t0": 31.6,
+   "t1": 45.0,
+   "pos": [
+    60,
+    300
+   ],
+   "w": 960,
+   "fade": 0.3
+  }
+ ],
+ "sfx": [
+  {
+   "t": 0.25,
+   "path": "../sfx/ding.wav",
+   "gain": 0.35
+  },
+  {
+   "t": 14.1,
+   "path": "../sfx/pair.wav",
+   "gain": 0.3
+  },
+  {
+   "t": 37.2,
+   "path": "../sfx/success.wav",
+   "gain": 0.3
+  }
+ ],
+ "music": {
+  "path": "../music/bed.mp3",
+  "gain": 0.04,
+  "fade_in": 1.5,
+  "fade_out": 2.5
+ },
+ "end_screen": {
+  "movie": "../end-screen/renders/end-screen.mp4"
+ }
+}

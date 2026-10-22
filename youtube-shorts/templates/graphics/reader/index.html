@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+/* BRAND: change these to the user's colours and font (from shorts-profile.md). */
+:root{--brand:#1E40AF;--brand2:#3B6BF0;--accent:#93B4FF;--ink:#0b1220;--mid:#3a4453;--soft:#DBEAFE;--pill:#F1F5FB;
+ --track:#EEF2F7;--track2:#CBD5E1;--muted:#64748b;--line:rgba(15,23,42,.07);--sh:0 22px 70px rgba(15,23,42,.28);
+ --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
+body{background:transparent;font-family:var(--font)}
+.card{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:var(--sh);position:absolute}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--brand);font-weight:800;font-size:17px;letter-spacing:.7px;border-radius:999px;padding:7px 16px;text-transform:uppercase}
+.h{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.15}
+.sub{font-size:21px;font-weight:600;color:var(--mid);margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font-size:23px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0}
+.pill .d{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+.num{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.hdr{display:flex;align-items:center;gap:18px}
+.dash{stroke:var(--brand);stroke-width:6;fill:none;stroke-dasharray:16 12;stroke-linecap:round}
+.ah{fill:var(--brand)}
+.grid{position:absolute;left:40px;top:150px;width:640px;display:flex;flex-wrap:wrap;gap:14px}
+#stop{position:absolute;left:40px;top:322px;width:640px;border-radius:18px;background:var(--pill);border:1px solid var(--line);padding:18px 24px;font-size:25px;font-weight:800;color:var(--ink);opacity:0}
+#ring{position:absolute;left:30px;top:312px;width:660px;height:88px;border-radius:24px;opacity:0}
+#say{position:absolute;left:40px;top:430px;font-size:22px;font-weight:700;color:var(--muted);text-decoration:line-through;opacity:0}
+#tag{position:absolute;left:40px;top:478px;display:inline-flex;align-items:center;gap:12px;background:var(--brand);color:#fff;border-radius:999px;padding:12px 22px;font-size:23px;font-weight:800;opacity:0}
+</style></head><body>
+<div id="root" data-composition-id="reader" data-start="0" data-width="760" data-height="640" data-duration="21.2" style="width:760px;height:640px;position:relative">
+ <div id="scene" class="clip" data-start="0" data-duration="21.2" data-track-index="0" style="position:absolute;inset:0">
+  <div id="c" class="card" style="left:20px;top:20px;width:720px;height:600px;padding:32px 40px;opacity:0">
+   <div class="hdr"><div class="num">1</div><div><div class="h">The reader</div><div class="sub">what the tool knows about them</div></div></div>
+   <div class="grid">
+    <div class="pill"><span class="d"></span>job title</div><div class="pill"><span class="d"></span>company size</div><div class="pill"><span class="d"></span>country</div>
+    <div class="pill"><span class="d"></span>signup source</div><div class="pill"><span class="d"></span>past purchases</div>
+   </div>
+   <div id="stop">the emails they actually opened</div>
+   <svg id="ring" viewBox="0 0 660 88" width="660" height="88"><rect class="dash" x="4" y="4" width="652" height="80" rx="24"/></svg>
+   <div id="say">what they ticked on the signup form</div>
+   <div id="tag">→ what they actually do is what counts</div>
+  </div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#c',{opacity:0,y:30,scale:.96},{opacity:1,y:0,scale:1,duration:.45,ease:'power3.out'},0);
+const P=document.querySelectorAll('.pill'); const T=[5.85,6.6,7.35,8.05,8.7];
+P.forEach((p,i)=>tl.fromTo(p,{opacity:0,y:14,scale:.9},{opacity:1,y:0,scale:1,duration:.35,ease:'back.out(1.6)'},T[i]));
+tl.fromTo('#stop',{opacity:0,y:14},{opacity:1,y:0,duration:.4,ease:'power3.out'},9.8);
+tl.to('#say',{opacity:1,duration:.35},12.4);
+tl.to('#ring',{opacity:1,duration:.3},15.9);
+tl.to('#ring .dash',{strokeDashoffset:-196,duration:4.9,ease:'none'},15.9);
+tl.fromTo('#tag',{opacity:0,x:-20},{opacity:1,x:0,duration:.4,ease:'power3.out'},16.2);
+tl.to({},{duration:.1},21.1);
+window.__timelines=window.__timelines||{};window.__timelines['reader']=tl;
+</script></body></html>

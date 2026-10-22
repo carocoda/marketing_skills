@@ -1,0 +1,39 @@
+{
+ "src": "work/clip.mp4",
+ "out": "Short 1 - How open rates are really measured.mp4",
+ "work": "work",
+ "brand": {
+  "primary": "#1E40AF",
+  "secondary": "#3B6BF0",
+  "ink": "#0B1220",
+  "mid": "#3A4453",
+  "bg": "#F6F5F1",
+  "font": null
+ },
+ "captions": {
+  "words": "work/words.json",
+  "style": "pill",
+  "highlight": "#3B6BF0"
+ },
+ "title": {
+  "text": "How open rates are really measured",
+  "sub": "Explained in one minute",
+  "t0": 0.0,
+  "t1": 4.5
+ },
+ "sfx": [
+  {
+   "t": 0.25,
+   "path": "../sfx/ding.wav",
+   "gain": 0.35
+  }
+ ],
+ "end_screen": {
+  "headline": "Watch the full video on YouTube",
+  "title": "The title of your long video",
+  "line": "youtube.com/@yourchannel",
+  "cta": "Link in the comments",
+  "duration": 4.0,
+  "logo": null
+ }
+}

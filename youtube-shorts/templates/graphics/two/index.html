@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+/* BRAND: change these to the user's colours and font (from shorts-profile.md). */
+:root{--brand:#1E40AF;--brand2:#3B6BF0;--accent:#93B4FF;--ink:#0b1220;--mid:#3a4453;--soft:#DBEAFE;--pill:#F1F5FB;
+ --track:#EEF2F7;--track2:#CBD5E1;--muted:#64748b;--line:rgba(15,23,42,.07);--sh:0 22px 70px rgba(15,23,42,.28);
+ --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
+body{background:transparent;font-family:var(--font)}
+.card{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:var(--sh);position:absolute}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--brand);font-weight:800;font-size:17px;letter-spacing:.7px;border-radius:999px;padding:7px 16px;text-transform:uppercase}
+.h{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.15}
+.sub{font-size:21px;font-weight:600;color:var(--mid);margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font-size:23px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0}
+.pill .d{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+.num{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.hdr{display:flex;align-items:center;gap:18px}
+.dash{stroke:var(--brand);stroke-width:6;fill:none;stroke-dasharray:16 12;stroke-linecap:round}
+.ah{fill:var(--brand)}
+.mini{width:290px;height:180px;padding:26px 28px;opacity:0}
+.mini .k{font-size:17px;font-weight:800;letter-spacing:.7px;color:var(--brand);text-transform:uppercase}
+.mini .t{font-size:34px;font-weight:800;color:var(--ink);margin-top:8px;letter-spacing:-.5px}
+.mini .s{font-size:19px;color:var(--mid);font-weight:600;margin-top:6px}
+</style></head><body>
+<div id="root" data-composition-id="two" data-start="0" data-width="760" data-height="300" data-duration="3.0" style="width:760px;height:300px;position:relative">
+ <div id="scene" class="clip" data-start="0" data-duration="3.0" data-track-index="0" style="position:absolute;inset:0">
+  <div id="a" class="card mini" style="left:20px;top:50px"><div class="k">Signal 1</div><div class="t">Opens</div><div class="s">easy to inflate</div></div>
+  <div id="b" class="card mini" style="left:450px;top:50px"><div class="k">Signal 2</div><div class="t">Clicks</div><div class="s">a real action</div></div>
+  <svg id="arr" style="position:absolute;left:300px;top:100px;opacity:0" width="160" height="80" viewBox="0 0 160 80">
+    <path class="dash" d="M30 40 H130"/><polygon class="ah" points="152,40 126,26 126,54"/><polygon class="ah" points="8,40 34,26 34,54"/>
+  </svg>
+  <div id="cmp" style="position:absolute;left:300px;top:172px;width:160px;text-align:center;font-size:19px;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.7px;opacity:0">compare</div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#a',{opacity:0,x:-30},{opacity:1,x:0,duration:.45,ease:'power3.out'},0.1);
+tl.fromTo('#b',{opacity:0,x:30},{opacity:1,x:0,duration:.45,ease:'power3.out'},0.45);
+tl.to('#arr',{opacity:1,duration:.3},1.4);
+tl.to('#arr .dash',{strokeDashoffset:-56,duration:1.2,ease:'none'},1.4);
+tl.to('#cmp',{opacity:1,duration:.3},1.6);
+tl.to({},{duration:.1},2.9);
+window.__timelines=window.__timelines||{};window.__timelines['two']=tl;
+</script></body></html>

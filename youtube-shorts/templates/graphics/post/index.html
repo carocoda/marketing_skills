@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+/* BRAND: change these to the user's colours and font (from shorts-profile.md). */
+:root{--brand:#1E40AF;--brand2:#3B6BF0;--accent:#93B4FF;--ink:#0b1220;--mid:#3a4453;--soft:#DBEAFE;--pill:#F1F5FB;
+ --track:#EEF2F7;--track2:#CBD5E1;--muted:#64748b;--line:rgba(15,23,42,.07);--sh:0 22px 70px rgba(15,23,42,.28);
+ --font:Inter,-apple-system,"Helvetica Neue",Arial,sans-serif}
+body{background:transparent;font-family:var(--font)}
+.card{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:var(--sh);position:absolute}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--brand);font-weight:800;font-size:17px;letter-spacing:.7px;border-radius:999px;padding:7px 16px;text-transform:uppercase}
+.h{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.15}
+.sub{font-size:21px;font-weight:600;color:var(--mid);margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--pill);border:1px solid var(--line);border-radius:999px;padding:11px 20px;font-size:23px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0}
+.pill .d{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+.num{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.hdr{display:flex;align-items:center;gap:18px}
+.dash{stroke:var(--brand);stroke-width:6;fill:none;stroke-dasharray:16 12;stroke-linecap:round}
+.ah{fill:var(--brand)}
+.col{position:absolute;top:150px;width:300px}
+.col .ct{font-size:19px;font-weight:800;letter-spacing:.7px;color:var(--brand);text-transform:uppercase;margin-bottom:12px;opacity:0}
+.col .pill{display:flex;margin-bottom:10px;font-size:22px;padding:9px 18px}
+#plus{position:absolute;left:330px;top:150px;width:60px;text-align:center;font-size:40px;font-weight:800;color:var(--brand);opacity:0}
+#foot{position:absolute;left:40px;top:556px;font-size:24px;font-weight:800;color:var(--ink);opacity:0}
+#fl{position:absolute;left:40px;top:596px;opacity:0}
+</style></head><body>
+<div id="root" data-composition-id="post" data-start="0" data-width="760" data-height="660" data-duration="22" style="width:760px;height:660px;position:relative">
+ <div id="scene" class="clip" data-start="0" data-duration="22" data-track-index="0" style="position:absolute;inset:0">
+  <div id="c" class="card" style="left:20px;top:20px;width:720px;height:620px;padding:32px 40px;opacity:0">
+   <div class="hdr"><div class="num">2</div><div><div class="h">The email</div><div class="sub">and who sent it</div></div></div>
+   <div class="col" style="left:40px"><div class="ct">The email itself</div>
+    <div class="pill"><span class="d"></span>subject line</div><div class="pill"><span class="d"></span>length</div><div class="pill"><span class="d"></span>images</div><div class="pill"><span class="d"></span>links</div></div>
+   <div id="plus">+</div>
+   <div class="col" style="left:400px"><div class="ct">Who sent it</div>
+    <div class="pill"><span class="d"></span>name</div><div class="pill"><span class="d"></span>domain</div><div class="pill"><span class="d"></span>reputation</div><div class="pill"><span class="d"></span>send history</div><div class="pill"><span class="d"></span>list hygiene</div><div class="pill"><span class="d"></span>authentication</div></div>
+   <div id="foot">= everything the filter checks</div>
+   <svg id="fl" viewBox="0 0 380 12" width="380" height="12"><path class="dash" d="M3 6 H377"/></svg>
+  </div>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#c',{opacity:0,y:30,scale:.96},{opacity:1,y:0,scale:1,duration:.45,ease:'power3.out'},0);
+const ct=document.querySelectorAll('.ct'); tl.to(ct[0],{opacity:1,duration:.3},2.2);
+const L=document.querySelectorAll('.col')[0].querySelectorAll('.pill'); const TL=[3.1,3.75,4.85,5.7];
+L.forEach((p,i)=>tl.fromTo(p,{opacity:0,x:-14},{opacity:1,x:0,duration:.35,ease:'power3.out'},TL[i]));
+tl.fromTo('#plus',{opacity:0,scale:.5},{opacity:1,scale:1,duration:.4,ease:'back.out(2)'},8.8);
+tl.to(ct[1],{opacity:1,duration:.3},9.0);
+const R=document.querySelectorAll('.col')[1].querySelectorAll('.pill'); const TR=[15.8,16.4,17.05,17.8,18.4,19.05];
+R.forEach((p,i)=>tl.fromTo(p,{opacity:0,x:14},{opacity:1,x:0,duration:.35,ease:'power3.out'},TR[i]));
+tl.fromTo('#foot',{opacity:0,y:10},{opacity:1,y:0,duration:.4},20.2);
+tl.to('#fl',{opacity:1,duration:.3},20.4);
+tl.to('#fl .dash',{strokeDashoffset:-56,duration:1.4,ease:'none'},20.4);
+tl.to({},{duration:.1},21.9);
+window.__timelines=window.__timelines||{};window.__timelines['post']=tl;
+</script></body></html>
