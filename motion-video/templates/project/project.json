@@ -1,0 +1,57 @@
+{
+  "title": "Template: a 32 s example promo (replace everything in this file per video)",
+  "canvas": {"width": 1920, "height": 1080, "fps": 60, "subframes": 4, "shutter": 1.0},
+
+  "brief": {
+    "what": "What the video is for, in one line",
+    "where": "Where it plays: LinkedIn, Reels, the website, a screen at an event",
+    "cta": "The one action: Make your first one today at example.com"
+  },
+  "facts": ["example.com"],
+
+  "music": {
+    "file": "audio/music/placeholder.wav",
+    "bpm": 120.0,
+    "period": 0.5,
+    "first_beat": 0.0,
+    "segments": [[0, 64]],
+    "xfade_beats": 1,
+    "rms_db": -21,
+    "duck_db": -7.5,
+    "pluck_notes": [349.23, 440.0, 523.25, 698.46],
+    "note": "placeholder.py makes this click-free 120 BPM loop so the template renders and mixes with no downloads and no key. Replace it with a generated or licensed track, measure it with beats.py and copy period, first_beat, bpm and segments here. pluck_notes: F4 A4 C5 F5, retune to the song's key."
+  },
+
+  "voice": {
+    "provider": "auto",
+    "language": "en",
+    "openrouter_model": "google/gemini-3.8-flash-tts",
+    "gemini_model": "gemini-2.5-flash-preview-tts",
+    "voice": "Aoede",
+    "style": "Warm, cheerful and playful voice inviting a friend to try something fun. Natural, lively but relaxed pace, a smile in the voice, no radio-announcer tone.",
+    "rms_db": -18,
+    "note": "provider: auto (OPENROUTER_API_KEY, else GEMINI_API_KEY, else none), openrouter, gemini or none. none = no paid voice: use placeholder.py voice for a scratch track, record or import your own vo/<name>.wav, or leave the lines out for a music-only video. Model names change: check your provider's current TTS model list."
+  },
+
+  "lines": [
+    {"name": "s1", "at": 0.67, "text": "Make a motion video in one afternoon!"},
+    {"name": "s2", "at": 7.6, "text": "One shape and one cursor, and every change lands on the beat."},
+    {"name": "s3", "at": 18.0, "text": "You write the script, the render does the rest."},
+    {"name": "s4", "at": 26.5, "text": "Switch on your brand style, and watch the numbers add up."},
+    {"name": "s5", "at": 38.0, "text": "It runs every week, without starting over."},
+    {"name": "s6", "at": 44.0, "text": "Ready? Make your first one today.",
+     "note": "'Ready?' lands on the button question (43.95), 'Make your first one' on the label swap (46)."}
+  ],
+
+  "heard_as": {},
+
+  "captions": {"on": false, "words_per_phrase": 4, "aliases": {}},
+
+  "copy": {
+    "banned": ["game changer", "game-changer", "unlock", "supercharge", "elevate", "revolutionize", "next level", "seamless"],
+    "price_markers": ["€", "$", "£"],
+    "price_late": true
+  },
+
+  "mix": {"target_lufs": -14, "true_peak": -1.2, "lra": 11}
+}

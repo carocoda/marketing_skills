@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion video</title>
+<style>
+  /* Colours, fonts, border and shadow come from BRAND in the script below; these are only the start values. */
+  :root{--canvas:#F1F2E4;--ink:#0D0D0D;--light:#FFFFFF;--a1:#F6E79E;--a2:#F8B2D6;--a3:#A9E6C4;--a4:#E4DAFF;
+        --fd:'Space Grotesk';--fm:'IBM Plex Mono';--bw:3px;--sh:6px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow:hidden;background:var(--canvas)}
+  body{font-family:var(--fd),sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  #frame{position:absolute;left:0;top:0;overflow:hidden;background:var(--canvas)}
+  #dots{position:absolute;left:0;top:0}
+  #world{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}
+  .w{position:absolute;left:0;top:0;transform-origin:0 0;white-space:nowrap}
+  #shape{position:absolute;left:0;top:0;border:var(--bw) solid var(--ink);overflow:hidden}
+  .c{position:absolute;left:0;top:0;transform-origin:0 0;white-space:nowrap}
+  .i{position:absolute;white-space:nowrap}
+  .mono{font-family:var(--fm),monospace}
+  .b{border:var(--bw) solid var(--ink)}
+
+  /* tile + opening window */
+  .seed{font-family:var(--fm),monospace;font-weight:700;font-size:34px;letter-spacing:1px}
+  .tdot{width:15px;height:15px;border-radius:50%;border:var(--bw) solid var(--ink)}
+  .tlabel{font-family:var(--fm),monospace;font-weight:700;font-size:13px;letter-spacing:.08em;color:color-mix(in srgb,var(--ink) 62%,transparent)}
+  .hl{font-weight:700;letter-spacing:-0.035em;line-height:1;text-transform:uppercase}
+  .hl-block{background:var(--a2);border:var(--bw) solid var(--ink);box-shadow:var(--sh) var(--sh) 0 var(--ink)}
+  .slap{background:var(--a1);border:var(--bw) solid var(--ink);box-shadow:7px 7px 0 var(--ink);font-family:var(--fm),monospace;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px 16px;transform-origin:50% 50%}
+  .rule{background:var(--ink)}
+  /* title pill, info pill */
+  .ttl{font-weight:700;font-size:40px;letter-spacing:-0.025em;color:var(--canvas)}
+  .info{font-weight:700;font-size:30px;letter-spacing:-0.02em}
+  .ichip{font-family:var(--fm),monospace;font-weight:700;font-size:16px;border:var(--bw) solid var(--ink);border-radius:8px;padding:3px 10px}
+  /* terminal */
+  .t-head{font-family:var(--fm),monospace;font-weight:700;font-size:14px;letter-spacing:.04em}
+  .t-prompt{font-family:var(--fm),monospace;font-weight:500;font-size:20px;color:var(--canvas)}
+  .t-caret{display:inline-block;width:11px;height:23px;background:var(--canvas);vertical-align:-4px;margin-left:2px}
+  .t-line{font-family:var(--fm),monospace;font-weight:700;font-size:18px}
+  /* tabs + card */
+  .tab{font-weight:700;font-size:21px;letter-spacing:-0.01em}
+  #ind{border:var(--bw) solid var(--ink)}
+  .tg-label{font-weight:700;font-size:19px;letter-spacing:-0.01em}
+  .tg-track{border:var(--bw) solid var(--ink);border-radius:20px}
+  .ph-box{border:2px dashed #b9b9b9}
+  .ph-b{font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#8c8c8c}
+  .typed-ppt{font-family:Arial,Helvetica,sans-serif;font-size:28px;color:#222}
+  .ss-tag{font-family:var(--fm),monospace;font-weight:700;letter-spacing:.08em}
+  .ss-title{font-weight:700;letter-spacing:-0.03em;line-height:1}
+  .ss-line{border:var(--bw) solid var(--ink);border-radius:8px}
+  .ss-card{background:var(--light);border:var(--bw) solid var(--ink);border-radius:10px}
+  .ss-bar{position:absolute;border:var(--bw) solid var(--ink);border-radius:5px 5px 0 0}
+  .ss-sticker{background:var(--a2);border:var(--bw) solid var(--ink);font-family:var(--fm),monospace;font-weight:700;padding:5px 9px}
+  .ch-title{font-weight:700;font-size:23px;letter-spacing:-0.01em}
+  .ch-meta{font-family:var(--fm),monospace;font-weight:500;font-size:13px;color:color-mix(in srgb,var(--ink) 60%,transparent)}
+  .chip{font-family:var(--fm),monospace;font-weight:700;font-size:15px;background:var(--a3);border:var(--bw) solid var(--ink);border-radius:8px;padding:3px 9px}
+  .bar{border:var(--bw) solid var(--ink);border-radius:8px 8px 0 0}
+  .bar-l{font-family:var(--fm),monospace;font-weight:500;font-size:14px;color:color-mix(in srgb,var(--ink) 75%,transparent)}
+  .tip{background:var(--ink);color:var(--canvas);font-weight:700;font-size:19px;padding:9px 14px;border-radius:10px;letter-spacing:-0.01em}
+  .tip b{font-family:var(--fm),monospace;font-weight:700}
+  /* week */
+  .wk-title{font-weight:700;font-size:25px;letter-spacing:-0.015em;line-height:1}
+  .wk-sub{font-family:var(--fm),monospace;font-weight:500;font-size:13px;color:color-mix(in srgb,var(--ink) 60%,transparent);margin-top:8px}
+  .day{width:48px;height:48px;border-radius:50%;border:var(--bw) solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fm),monospace;font-weight:700;font-size:14px}
+  /* button, sticker, url */
+  .btn-label{display:flex;align-items:center;gap:14px;font-weight:700;font-size:31px;letter-spacing:-0.01em}
+  .sticker{background:var(--a3);border:var(--bw) solid var(--ink);padding:6px 12px 7px;text-align:center;line-height:1}
+  .sticker .k{font-family:var(--fm),monospace;font-weight:700;font-size:12px;letter-spacing:.08em}
+  .sticker .v{font-weight:700;font-size:28px;letter-spacing:-0.02em;margin-top:3px}
+  .url{font-family:var(--fm),monospace;font-weight:700;font-size:19px;letter-spacing:.02em;border-bottom:var(--bw) solid var(--ink);padding-bottom:3px}
+  .dateline{font-family:var(--fm),monospace;font-weight:500;font-size:14px;letter-spacing:.04em;color:color-mix(in srgb,var(--ink) 72%,transparent)}
+  /* frame: logo, hud, captions, cursor */
+  #logo{position:absolute;left:0;top:0;transform-origin:0 0;font-family:var(--fm),monospace;font-weight:700;font-size:21px;letter-spacing:1px;background:var(--a1);border:var(--bw) solid var(--ink);box-shadow:var(--sh) var(--sh) 0 var(--ink);padding:9px 14px;white-space:nowrap}
+  .hud{position:absolute;left:0;top:0;transform-origin:0 0;font-family:var(--fm),monospace;font-weight:700;font-size:20px;letter-spacing:.06em;white-space:nowrap}
+  #cap{position:absolute;left:0;top:0;text-align:center;font-weight:700;letter-spacing:-0.01em;line-height:1.25}
+  #cap span{display:inline-block;padding:0 .12em;border-radius:.18em}
+  #cursor{position:absolute;left:0;top:0;width:44px;height:64px;transform-origin:0 0}
+  #debug{position:absolute;right:12px;top:12px;font:12px monospace;background:#fff;padding:4px 8px;display:none}
+</style>
+<!-- captions.js is written by build_captions.py (an empty list means no captions) -->
+<script src="captions.js"></script>
+</head>
+<body>
+<div id="frame">
+  <canvas id="dots"></canvas>
+  <div id="world">
+    <div class="w" id="burst0" style="border-radius:50%;border:4px solid var(--ink);background:var(--a1)"></div>
+    <div class="w" id="burst1" style="border-radius:50%;border:4px solid var(--ink);background:var(--a2)"></div>
+    <div class="w" id="burst2" style="border-radius:50%;border:4px solid var(--ink);background:var(--a3)"></div>
+    <div id="shape">
+      <!-- the tile (first and last frame) -->
+      <div class="c seed" id="seedLabel"></div>
+      <!-- the opening window -->
+      <div class="c tdot" id="td1" style="background:var(--a2)"></div>
+      <div class="c tdot" id="td2" style="background:var(--a1)"></div>
+      <div class="c tdot" id="td3" style="background:var(--a3)"></div>
+      <div class="c tlabel" id="tlabel"></div>
+      <div class="c rule" id="tbarRule" style="height:3px;width:700px"></div>
+      <div class="c hl" id="hl1" style="font-size:46px"></div>
+      <div class="c hl-block" id="hlBlock"></div>
+      <div class="c hl" id="hl2" style="font-size:92px"></div>
+      <div class="c hl" id="hl3" style="font-size:92px"></div>
+      <!-- title pill and info pill -->
+      <div class="c ttl" id="ttl"></div>
+      <div class="c info" id="info"></div>
+      <div id="ichips"></div>
+      <!-- terminal -->
+      <div class="c tdot" id="tt1" style="background:var(--a2)"></div>
+      <div class="c tdot" id="tt2" style="background:var(--a1)"></div>
+      <div class="c tdot" id="tt3" style="background:var(--a3)"></div>
+      <div class="c t-head" id="tHead"></div>
+      <div class="c t-prompt" id="tPrompt"><span style="color:var(--a2)">›</span> <span id="tTyped"></span><span class="t-caret" id="tCaret"></span></div>
+      <div class="c t-line" id="tBusy" style="color:var(--a1)"></div>
+      <div class="c t-line" id="tDone" style="color:var(--a3)"></div>
+      <!-- tabs + card -->
+      <div class="c" id="ind"></div>
+      <div id="tabs"></div>
+      <div class="c rule" id="divider" style="height:3px;width:560px"></div>
+      <div class="c" id="deckBoring"></div>
+      <div class="c" id="deckStyled"></div>
+      <div class="c tg-label" id="dkLabel"></div>
+      <div class="c tg-track" id="dkTrack" style="width:72px;height:40px"></div>
+      <div class="c b" id="dkKnob" style="height:28px;border-radius:14px;background:#fff"></div>
+      <div class="c ch-title" id="chTitle"></div>
+      <div class="c chip" id="chipCheck"></div>
+      <div class="c ch-meta" id="chMeta"></div>
+      <div id="bars"></div>
+      <div class="c rule" id="baseline" style="height:3px;width:464px"></div>
+      <!-- week -->
+      <div class="c" id="wkText"><div class="wk-title" id="wkTitle"></div><div class="wk-sub" id="wkSub"></div></div>
+      <div id="days"></div>
+      <!-- button -->
+      <div class="c btn-label" id="btnLabel"><span id="btnText"></span>
+        <svg id="btnArrow" width="28" height="28" viewBox="0 0 28 28" fill="none" style="stroke:var(--ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14H23M15 6l8 8-8 8"/></svg>
+      </div>
+      <div class="c btn-label" id="btnAsk"><span id="askText"></span></div>
+    </div>
+    <!-- world-space extras: they move with the camera but are not clipped by the shape -->
+    <div class="w slap" id="slap"></div>
+    <svg class="w" id="dSpark" width="84" height="84" viewBox="0 0 84 84" fill="none"><path d="M42 5 C46 30 54 38 79 42 C54 46 46 54 42 79 C38 54 30 46 5 42 C30 38 38 30 42 5Z" style="fill:var(--a1);stroke:var(--ink)" stroke-width="3.5" stroke-linejoin="round"/></svg>
+    <svg class="w" id="dArrow" width="150" height="100" viewBox="0 0 150 100" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 88 L52 50 L78 70 L132 18" style="stroke:var(--ink)" stroke-width="15"/><path d="M8 88 L52 50 L78 70 L132 18" style="stroke:var(--a2)" stroke-width="8"/><path d="M104 14 L134 14 L134 44" style="stroke:var(--ink)" stroke-width="15"/><path d="M104 14 L134 14 L134 44" style="stroke:var(--a2)" stroke-width="8"/></svg>
+    <svg class="w" id="dBubble" width="104" height="96" viewBox="0 0 104 96" fill="none"><path d="M8 8 H96 V70 H44 L22 90 V70 H8 Z" style="fill:var(--light);stroke:var(--ink)" stroke-width="3.5" stroke-linejoin="round"/><g style="fill:var(--a3);stroke:var(--ink)" stroke-width="3"><circle cx="32" cy="39" r="7"/><circle cx="52" cy="39" r="7"/><circle cx="72" cy="39" r="7"/></g></svg>
+    <svg class="w" id="dCheck" width="96" height="96" viewBox="0 0 96 96" fill="none"><g style="fill:var(--a3);stroke:var(--ink)" stroke-width="3"><rect x="4" y="4" width="28" height="28"/><rect x="60" y="4" width="28" height="28"/><rect x="32" y="32" width="28" height="28"/><rect x="4" y="60" width="28" height="28"/><rect x="60" y="60" width="28" height="28"/></g></svg>
+    <div class="w sticker" id="sticker"><div class="k" id="stickK"></div><div class="v" id="stickV"></div></div>
+    <div class="w url" id="url"></div>
+    <div class="w dateline" id="dateline"></div>
+    <div class="w" id="tip"><div class="tip" id="tipBox"></div><svg width="18" height="10" viewBox="0 0 18 10" style="display:block;margin:-1px auto 0"><path d="M0 0H18L9 10Z" style="fill:var(--ink)"/></svg></div>
+  </div>
+
+  <div id="logo"></div>
+  <div class="hud" id="hudL"></div>
+  <div class="hud" id="hudR"></div>
+  <div id="cap"></div>
+
+  <svg id="cursor" viewBox="0 0 22 32" overflow="visible">
+    <path d="M2.2 1.6 V24.6 L7.7 19.4 L11.3 27.8 L15.4 26 L11.9 17.9 H19.4 Z" style="fill:var(--ink)" transform="translate(1.6 1.6)"/>
+    <path d="M2.2 1.6 V24.6 L7.7 19.4 L11.3 27.8 L15.4 26 L11.9 17.9 H19.4 Z" style="fill:var(--ink)" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>
+  </svg>
+  <div id="debug"></div>
+</div>
+
+<script>
+/* =====================================================================
+   Motion video template. One shape, never cut. Every style is a pure function of t (seconds).
+
+   1. SETTINGS (change these first)
+      BRAND      colours, fonts, border, shadow, corner scale, logo text, dot grid
+      COPY       every word on screen
+      BEATS, T   the grid: T = BEATS x beat, a whole number of frames (from beats.py)
+   2. ENGINE (keep): stepResp, SP, Track, vis, place/placeW/show, camera, cursor, dots
+   3. TIMELINE (rewrite per video): S_SHAPE S_BG S_ZOOM S_CAM S_KICK S_ROT S_LIFT, the state tracks,
+      window.SFX (every UI sound as [beat, kind]), buildCursor (MOVES + clicks), seek(t) (one block per state)
+
+   The canvas size comes from the URL (?w=1080&h=1920); render.py passes project.json "canvas".
+   ?t=12.3 shows a still, ?debug shows the beat counter. Without ?still or ?t it plays (no sound).
+   ===================================================================== */
+
+/* ======================= 1. SETTINGS ======================= */
+const BRAND = {
+  colors: {                 // roles, not names: swap the hex values for the brand's
+    canvas: '#F1F2E4',      // background
+    ink: '#0D0D0D',         // text, borders, hard shadows, dark states (terminal, title pill)
+    light: '#FFFFFF',       // light states (window, cards)
+    a1: '#F6E79E',          // accent 1: the tile, the CTA button, the logo chip, the big burst
+    a2: '#F8B2D6',          // accent 2: the headline block, the active tab, small highlights
+    a3: '#A9E6C4',          // accent 3: checks, "done", the offer sticker
+    a4: '#E4DAFF',          // accent 4: used sparingly
+  },
+  fonts: {                  // google: the Google Fonts spec (needs internet when rendering); or src: a local file
+    display: { family: 'Space Grotesk', google: 'Space+Grotesk:wght@500;600;700', weights: [500, 600, 700] },
+    mono: { family: 'IBM Plex Mono', google: 'IBM+Plex+Mono:wght@500;700', weights: [500, 700] },
+    // local example: display: { family: 'Brand Sans', src: 'assets/fonts/BrandSans.woff2', weights: [500, 700] },
+  },
+  border: 3,                // px; 0 for a flat look
+  shadow: 6,                // hard offset shadow in px; 0 for none
+  radius: 1,                // corner scale for the shape (0.4 = sharper; pills stay round)
+  dots: true,               // dot grid on the canvas, with ripples on big hits
+  logo: 'YOUR_BRAND',       // the chip top left; '' hides it
+};
+const COPY = {
+  tile: 'GO',
+  label: 'YOUR_BRAND · NEW VIDEO',
+  hl: ['Make a', 'motion', 'video'],          // short words: the window is 700 px wide (about 9 letters at 92 px)
+  slap: 'IN 1 DAY',
+  title: 'One shape, every beat',
+  info: '16:9 · 60 fps · loops',
+  chips: ['Voice-over', 'Music', 'Captions'],
+  termHead: 'claude · ~/motion-video',
+  prompt: 'make a 30 second promo in our brand style',
+  busy: '● rendering',
+  done: '✓ promo.mp4 ready · 60 fps',
+  tabs: ['Style', 'Results'],
+  toggle: 'Brand style',
+  slideTag: 'YOUR_BRAND · UPDATE', slideTitle: 'Q3 update', slidePlaceholder: 'Click to add text', slideSticker: '✓ on brand',
+  chartTitle: 'Signups per channel', chartMeta: 'Q3', check: '✓ adds up',
+  bars: [['Video', 128], ['Email', 86], ['Social', 64], ['Ads', 41]],
+  tip: 'Video · <b>128</b> signups',
+  weekTitle: 'Your workflow', weekSub: 'runs every week', days: ['M', 'T', 'W', 'T', 'F'],
+  ask: 'Ready?', cta: 'Get started',
+  stickerK: 'LAUNCH', stickerV: 'FREE',
+  url: 'example.com', dateline: 'MOTION VIDEO · 60 FPS · LOOPS',
+  hudL: 'MAKE A MOTION VIDEO', hudR: 'EXAMPLE.COM',
+};
+const BEATS = 64, T = 32.0;   // 64 beats at 120 BPM = 32 s = 1920 frames at 60 fps
+
+/* ======================= 2. ENGINE ======================= */
+const Q = new URLSearchParams(location.search);
+const W = +Q.get('w') || 1920, H = +Q.get('h') || 1080;
+const LAND = W >= H * 1.2, VERT = H >= W * 1.2;
+const FZ = LAND ? H / 1080 : W / 1240;               // format zoom: the shape fills about 85% of the width in 9:16 and 1:1
+const CX = W / 2, CY = VERT ? H * 0.46 : H / 2;      // 9:16: content sits a bit high, clear of the platform buttons
+const US = Math.min(W, H) / 1080;                    // size of screen-space UI (logo, hud, captions, cursor)
+const BEAT = T / BEATS, BPM = 60 / BEAT;
+const B = n => n * BEAT;
+const mod = (a, n) => ((a % n) + n) % n;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => { t = clamp(t, 0, 1); return 1 - Math.pow(1 - t, 3); };
+const minJerk = s => { s = clamp(s, 0, 1); return s * s * s * (10 - 15 * s + 6 * s * s); };
+const $ = id => document.getElementById(id);
+
+/* springs: closed-form step response, so every value is a pure function of t */
+function stepResp(a, resp, damp) {
+  if (a <= 0) return 0;
+  const w = 2 * Math.PI / resp;
+  if (damp < 1) {
+    const wd = w * Math.sqrt(1 - damp * damp);
+    return 1 - Math.exp(-damp * w * a) * (Math.cos(wd * a) + (damp * w / wd) * Math.sin(wd * a));
+  }
+  return 1 - Math.exp(-w * a) * (1 + w * a);
+}
+const SP = {
+  morph: [0.48, 0.8], cam: [0.7, 0.92], color: [0.18, 1], press: [0.12, 0.92], hover: [0.26, 0.86],
+  lead: [0.26, 0.8], trail: [0.46, 0.86], pop: [0.36, 0.76], bar: [0.44, 0.78], soft: [0.34, 0.9], slide: [0.4, 0.82], snap: [0.05, 1],
+  burst: [0.52, 0.62], slam: [0.3, 0.55], kickIn: [0.06, 1], kickOut: [0.42, 0.5]
+};
+/* a value over time: keys [beat, value, spring?], sorted and wrapped modulo T, one spring per change */
+function Track(keys, spring) {
+  const ks = keys.map(k => ({ t: mod(B(k[0]), T), v: k[1], sp: k[2] || spring })).sort((a, b) => a.t - b.t);
+  const n = ks.length, arr = Array.isArray(ks[0].v);
+  for (let i = 0; i < n; i++) {
+    const p = ks[(i - 1 + n) % n].v;
+    ks[i].d = arr ? ks[i].v.map((x, j) => x - p[j]) : ks[i].v - p;
+  }
+  return t => {
+    t = mod(t, T);
+    let cur = ks[n - 1];
+    for (let i = 0; i < n; i++) { if (ks[i].t <= t) cur = ks[i]; else break; }
+    const out = arr ? cur.v.slice() : [cur.v];
+    for (const k of ks) {
+      const r = 1 - stepResp(mod(t - k.t, T), k.sp[0], k.sp[1]);
+      if (Math.abs(r) < 1e-6) continue;
+      if (arr) for (let j = 0; j < out.length; j++) out[j] -= k.d[j] * r; else out[0] -= k.d * r;
+    }
+    return arr ? out : out[0];
+  };
+}
+/* a layer's window: 0 -> 1 after bIn (+delay, over inDur s), back to 0 at bOut (over outDur s) */
+function vis(t, bIn, bOut, inDur = 0.2, outDur = 0.12, delay = 0.05) {
+  const tIn = B(bIn), len = mod(B(bOut) - tIn, T) || T, since = mod(t - tIn, T);
+  if (since < len) return since < delay ? 0 : ease((since - delay) / inDur);
+  const after = since - len;
+  return after < outDur ? 1 - clamp(after / outDur, 0, 1) : 0;
+}
+const inWin = (t, bIn, bOut) => mod(t - B(bIn), T) < (mod(B(bOut) - B(bIn), T) || T);
+const sinceB = (t, b) => mod(t - B(b), T);
+const popTrack = (bIn, bOut, sp = SP.pop) => Track([[bIn, 1, sp], [bOut, 0, SP.soft]], sp);
+const kick = (b, amt) => [[b, amt, SP.kickIn], [b + 0.12, 0, SP.kickOut]];
+
+/* palette from BRAND */
+const hex = h => { h = h.replace('#', ''); if (h.length === 3) h = [...h].map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+const C = Object.fromEntries(Object.entries(BRAND.colors).map(([k, v]) => [k, hex(v)]));
+const rgb = c => `rgb(${c[0].toFixed(1)},${c[1].toFixed(1)},${c[2].toFixed(1)})`;
+const rgba = (c, a) => `rgba(${c[0].toFixed(1)},${c[1].toFixed(1)},${c[2].toFixed(1)},${a.toFixed(3)})`;
+const mix = (a, b, t) => [0, 1, 2].map(k => lerp(a[k], b[k], clamp(t, 0, 1)));
+const INK = rgb(C.ink);
+
+/* ======================= 3. TIMELINE =======================
+   BEAT GRID (64 beats at 120 BPM = 32 s)                      example voice-over (project.json)
+    0     tile, cursor resting on it · 0.25 click: bursts, ripple, the window springs open
+    0.6/1.5/3.1 headline words slam in · 4.75 sticker slaps on   s1 "Make a motion video in one afternoon!"
+    7.25  title pill (ink)                                        s2 "One shape and one cursor, and every change lands on the beat."
+   11.5   info pill · chips pop on 13, 14, 15
+   17.75  terminal: the prompt types, rendering, 23.5 ✓ done      s3 "You write the script, the render does the rest."
+   25.75  tab bar · 27 click opens the card · 29.4 toggle         s4 "Switch on your brand style, and watch the numbers add up."
+   32.5   click "Results": bars grow (plucks), ✓, tooltip
+   37.75  week pill: the days tick off                            s5 "It runs every week, without starting over."
+   43.75  button "Ready?" -> 46 "Get started", sticker, url       s6 "Ready? Make your first one today."
+   57.5   click the button -> 57.6 back to the tile (= frame 0, the loop)
+   ===================================================================== */
+const BORDER = BRAND.border, RAD = BRAND.radius;
+const S_SHAPE = Track([
+  [0.25,  [0, 0, 700, 420, 26], SP.burst],   // the opening window springs open
+  [7.25,  [0, 0, 560, 112, 56]],             // title pill
+  [11.5,  [0, 0, 640, 134, 34]],             // info pill
+  [17.75, [0, 0, 800, 300, 22]],             // terminal
+  [25.75, [0, 0, 560, 80, 40]],              // tab bar
+  [27,    [0, 190, 560, 460, 26]],           // card under the tabs (the tabs stay at its top)
+  [37.75, [0, 0, 640, 112, 56]],             // week pill
+  [43.75, [0, 0, 300, 84, 16]],              // CTA button
+  [57.6,  [0, 0, 120, 120, 26]],             // back to the tile
+], SP.morph);
+const S_BG = Track([[0.25, C.light], [7.25, C.ink], [11.5, C.light], [17.75, C.ink], [25.75, C.light], [43.75, C.a1]], SP.color);
+const S_ZOOM = Track([[0.25, 1.5, SP.burst], [7.25, 1.75], [11.5, 1.6], [17.75, 1.75], [25.75, 2.1], [27, 1.65], [37.75, 2.1],
+  [43.75, 2.9], [57.6, 2.7]], SP.cam);
+const S_KICK = Track([[60, 0], ...kick(0.25, -0.08), ...kick(1.5, 0.07), ...kick(4.75, 0.06)], SP.snap);
+const S_ROT = Track([[60, 0], [0.25, -3.2, SP.kickIn], [0.37, 0, [0.6, 0.5]], [1.5, 1.2, SP.kickIn], [1.62, 0, [0.5, 0.55]], [4.75, -1, SP.kickIn], [4.87, 0, [0.5, 0.55]]], SP.snap);
+const S_CAM = Track([[0.25, [0, 0]], [27, [0, 190]], [37.75, [0, 0]], [43.75, [0, 34]], [57.6, [0, 0]]], SP.cam);
+const S_LIFT = Track([[0.1, -1, SP.press], [0.25, 0, SP.soft], [56.8, 1, SP.hover], [57.38, -1, SP.press], [57.5, 0, SP.soft], [63.4, 1, SP.hover]], SP.hover);
+
+/* opening kit: ripples through the dot grid, bursts, headline, sticker, doodles */
+const RIPPLES = [{ b: 0.25, x: 0, y: 0, s: 1, c: C.a2 }, { b: 1.5, x: -120, y: -40, s: 0.65, c: C.a1 },
+  { b: 4.75, x: 230, y: 150, s: 0.8, c: C.a3 }, { b: 46, x: 0, y: 0, s: 0.5, c: C.a2 }];
+const HL1 = popTrack(0.6, 7.0, SP.slam), HL2 = popTrack(1.5, 7.0, SP.slam), HL3 = popTrack(3.1, 7.0, SP.slam);
+const HL_BLOCK = Track([[1.35, 1, [0.3, 0.72]], [7.0, 0, [0.2, 1]]], SP.pop);
+const SLAP = Track([[4.75, 1, SP.slam], [11.5, 0, SP.soft]], SP.slam);
+const SLAP_POS = Track([[0.25, [230, 150]], [7.25, [236, -54]]], SP.morph);
+const DOODLES = [
+  { id: 'dSpark', b: 2.5, x: -395, y: -205, r: -8 }, { id: 'dArrow', b: 3.5, x: 405, y: -215, r: 4 },
+  { id: 'dBubble', b: 4.25, x: 430, y: 40, r: 6 }, { id: 'dCheck', b: 5.5, x: -420, y: 170, r: -5 }];
+const DOODLE_S = DOODLES.map(d => Track([[d.b, 1, SP.slam], [7.25, 0, SP.soft]], SP.slam));
+const BURSTS = [{ d: 1650 }, { d: 1220 }, { d: 820 }];
+const BURST_S = BURSTS.map((b, i) => Track([[0.25 + i * 0.1, 1, [0.46, 0.78]], [1.05 + i * 0.12, 0, [0.4, 1]]], SP.pop));
+
+/* title + info */
+const ICHIPS = COPY.chips.map((l, i) => ({ l, c: [C.a3, C.a4, C.a2][i % 3], b: 13 + i }));
+const ICHIP_S = ICHIPS.map(c => popTrack(c.b, 17.75));
+
+/* terminal */
+const PROMPT = COPY.prompt, PROMPT_B0 = 18.25, PROMPT_B1 = PROMPT_B0 + Math.ceil(PROMPT.length / 14 * 4) / 4;   // 14 characters per beat
+const T_HEAD = Track([[21.5, 1, SP.kickIn], [21.62, 0, [0.45, 0.55]]], SP.snap);
+
+/* tabs -> card: a liquid indicator (two edges on different springs), a toggle, a chart */
+let TABS = [], IND_L, IND_R, IND_T, IND_B, IND_RAD;
+const TAB_B = [25.75, 32.5];
+function buildIndicator() {
+  const s = i => [TABS[i].x0, TABS[i].x1], c0 = TABS[0].cx;
+  const moves = [[25.6, [c0 - 12, c0 + 12], 0], [25.75, s(0), -1], [32.5, s(1), 1]];
+  const L = [], R = [];
+  for (const [b, [l, r], dir] of moves) {
+    L.push([b, l, dir > 0 ? SP.trail : dir < 0 ? SP.lead : SP.snap]);
+    R.push([b, r, dir > 0 ? SP.lead : dir < 0 ? SP.trail : SP.snap]);
+  }
+  IND_L = Track(L); IND_R = Track(R);
+  IND_T = Track([[25.6, -12, SP.snap], [25.75, -28]], SP.morph);
+  IND_B = Track([[25.6, 12, SP.snap], [25.75, 28]], SP.morph);
+  IND_RAD = Track([[25.6, 12, SP.snap], [25.75, 28]], SP.morph);
+}
+const TAB_ACTIVE = COPY.tabs.map((_, i) => Track(TAB_B.map((b, j) => [b, i === j ? 1 : 0]), SP.color));
+const DK = { x0: 196, x1: 268, y: 82 };
+const DK_ON = Track([[29.4, 1, SP.color], [32.6, 0, SP.snap]], SP.color);
+const DK_L = Track([[27.25, DK.x0 + 6, SP.snap], [29.4, DK.x1 - 34, SP.trail]], SP.morph);
+const DK_R = Track([[27.25, DK.x0 + 34, SP.snap], [29.4, DK.x1 - 6, SP.lead]], SP.morph);
+const DK_LIFT = Track([[28.9, 0.8, SP.hover], [29.28, -1, SP.press], [29.4, 0, SP.soft]], SP.hover);
+const SS_STICK = Track([[30, 1, SP.pop], [32.6, 0, SP.snap]], SP.pop);
+const SS_BARS = [0, 1, 2].map(i => Track([[29.7 + i * 0.25, 1, SP.bar], [32.6, 0, SP.snap]], SP.bar));
+const BARS = COPY.bars.map(([l, v], i) => ({ l, v, c: [C.a2, C.a3, C.a1, C.light][i % 4] }));
+const BAR_MAX = Math.max(...BARS.map(b => b.v));
+const CH = { x0: -214, bw: 76, gap: 40, base: 372, maxH: 190, titleY: 80 };
+const barCx = i => CH.x0 + i * (CH.bw + CH.gap) + CH.bw / 2;
+const BAR_H = BARS.map((b, i) => Track([[33 + i * 0.25, 1, SP.bar], [37.75, 0, SP.snap]], SP.bar));
+const CHECK = popTrack(34, 37.75);
+
+/* week */
+const DAY_B = COPY.days.map((_, i) => 39.5 + i * 0.25);
+const DAY_ON = DAY_B.map(b => Track([[b, 1, SP.pop], [43.75, 0, SP.snap]], SP.pop));
+
+/* CTA kit: button, offer sticker, url, the click home */
+const STICK = Track([[46.75, 1, SP.pop], [57.5, 0, SP.soft]], SP.pop);
+const STICK_ROT = Track([[46.75, 8, SP.pop], [54.5, -4, SP.pop], [55, 8, SP.pop]], SP.pop);
+const ARROW = Track([[53.5, 6, SP.hover], [54, 0, SP.pop], [56.8, 5, SP.hover], [57.4, 0, SP.press]], SP.hover);
+
+/* sound: the single source of truth for build_audio.py. One [beat, kind] per visible event. */
+const PROMPT_KEYS = []; for (let b = PROMPT_B0; b < PROMPT_B1; b += 0.25) PROMPT_KEYS.push(b);
+window.SFX = [
+  [0.25, 'click'], [0.25, 'whoosh'], [0.6, 'pop'], [1.5, 'slam'], [2.5, 'pop'], [3.1, 'pop'], [3.5, 'pop'], [4.25, 'pop'], [4.75, 'stamp'], [5.5, 'pop'],
+  [7.25, 'whoosh'], [7.55, 'pop'], [11.5, 'whoosh'], ...ICHIPS.map(c => [c.b, 'pop']),
+  [17.75, 'whoosh'], ...PROMPT_KEYS.map(b => [b, 'key']), [PROMPT_B1 + 0.25, 'enter'], [21.5, 'tick'], [23.5, 'ding'],
+  [25.75, 'pop'], [27, 'click'], [29.4, 'toggle'], [30, 'pop'], [32.5, 'click'],
+  ...BARS.map((b, i) => [33 + i * 0.25, 'pluck' + (i % 4)]), [34, 'pop'], [34.75, 'tick'],
+  [37.75, 'whoosh'], ...DAY_B.map(b => [b, 'tick']),
+  [46, 'pop'], [46.75, 'stamp'], [47.5, 'pop'], [48.5, 'pop'], [57.5, 'click'],
+].map(([b, k]) => ({ beat: b, t: B(b), kind: k }));
+
+/* cursor: real moves (minimum jerk plus a slight arc), real clicks */
+let MOVES = [], PRESS;
+function buildCursor() {
+  const tab = i => TABS[i].cx + 10;
+  MOVES = [
+    [0.6, 1.9, 300, 250, 0.14],                                    // away from the opening window
+    [7.6, 8.6, 300, 110, 0.1],
+    [11.7, 12.6, 300, 120, -0.1],
+    [17.9, 18.8, 300, 200, 0.1],                                   // under the terminal
+    [25.8, 26.6, tab(0), 12, 0.12],                                // click the first tab -> the card opens
+    [27.6, 28.9, (DK.x0 + DK.x1) / 2 + 6, DK.y + 6, -0.12],        // the toggle
+    [30.2, 32.0, tab(1), 12, 0.14],                                // the second tab
+    [33.2, 34.4, barCx(0) + 8, 262, -0.12],                        // hover the first bar -> tooltip
+    [36.0, 37.0, 280, 330, 0.1],
+    [38.0, 38.8, 300, 110, 0.1],
+    [44.0, 45.0, 160, 120, 0.1],
+    [55.0, 56.7, 74, 20, -0.14],                                   // to the button
+    [58.0, 59.3, 36, 28, 0.1],                                     // onto the tile: the loop starts here
+  ].map(m => ({ t0: B(m[0]), t1: B(m[1]), x: m[2], y: m[3], arc: m[4] }));
+  const clicks = [0.25, 27, 29.4, 32.5, 57.5];
+  const keys = [];
+  for (const b of clicks) keys.push([b - 0.15, 1, SP.press], [b, 0, SP.soft]);
+  PRESS = Track(keys, SP.press);
+}
+function cursorWorld(t) {
+  t = mod(t, T);
+  const all = [];
+  for (const c of [-1, 0]) for (const m of MOVES) all.push({ ...m, t0: m.t0 + c * T, t1: m.t1 + c * T });
+  let p = [MOVES[MOVES.length - 1].x, MOVES[MOVES.length - 1].y];
+  for (const m of all) {
+    if (t >= m.t1) { p = [m.x, m.y]; continue; }
+    if (t > m.t0) {
+      const s = (t - m.t0) / (m.t1 - m.t0), e = minJerk(s);
+      const dx = m.x - p[0], dy = m.y - p[1], d = Math.hypot(dx, dy) || 1;
+      const nx = -dy / d, ny = dx / d, off = m.arc * d * Math.sin(Math.PI * e);
+      return [p[0] + dx * e + nx * off, p[1] + dy * e + ny * off];
+    }
+    break;
+  }
+  return p;
+}
+
+/* ======================= DOM setup ======================= */
+const EL = {};
+function mk(parent, cls, html, style) { const d = document.createElement('div'); d.className = cls; if (html != null) d.innerHTML = html; if (style) d.style.cssText = style; parent.appendChild(d); return d; }
+function styledSlide(root, w, h, s) {
+  root.style.cssText += `;width:${w}px;height:${h}px;background:var(--a1);border:var(--bw) solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:var(--sh) var(--sh) 0 var(--ink)`;
+  const el = {};
+  mk(root, 'i ss-tag', COPY.slideTag, `left:${30 * s}px;top:${26 * s}px;font-size:${13 * s}px`);
+  mk(root, 'i ss-title', COPY.slideTitle, `left:${28 * s}px;top:${58 * s}px;font-size:${58 * s}px`);
+  [['var(--light)', 190], ['var(--a3)', 150], ['var(--a2)', 170]].forEach(([c, lw], i) =>
+    mk(root, 'i ss-line', null, `left:${30 * s}px;top:${(156 + 32 * i) * s}px;width:${lw * s}px;height:${16 * s}px;background:${c}`));
+  const card = mk(root, 'i ss-card', null, `left:${w - 222 * s}px;top:${92 * s}px;width:${190 * s}px;height:${190 * s}px;box-shadow:${5 * s}px ${5 * s}px 0 var(--ink)`);
+  el.bars = [['var(--a2)', 118], ['var(--a3)', 84], ['var(--ink)', 142]].map(([c, hh], i) =>
+    mk(card, 'ss-bar', null, `left:${(26 + i * 50) * s}px;bottom:${14 * s}px;width:${28 * s}px;height:${hh * s}px;background:${c};transform-origin:50% 100%`));
+  el.stick = mk(root, 'i ss-sticker', COPY.slideSticker, `left:${w - 150 * s}px;top:${20 * s}px;font-size:${14 * s}px;transform-origin:50% 50%`);
+  return el;
+}
+function boringSlide(root, w, h) {     /* the deliberately plain "before" slide (Arial on purpose) */
+  root.style.cssText += `;width:${w}px;height:${h}px;background:#fff;border:var(--bw) solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:var(--sh) var(--sh) 0 var(--ink)`;
+  mk(root, 'i ph-box', null, `left:26px;top:26px;width:${w - 58}px;height:64px`);
+  mk(root, 'i typed-ppt', COPY.slideTitle, 'left:44px;top:40px');
+  mk(root, 'i ph-box', null, `left:26px;top:108px;width:${w - 58}px;height:${h - 142}px`);
+  mk(root, 'i ph-b', '•&nbsp;&nbsp;' + COPY.slidePlaceholder, 'left:44px;top:124px');
+}
+function applyBrand() {
+  const r = document.documentElement.style;
+  for (const [k, v] of Object.entries(BRAND.colors)) r.setProperty('--' + k, v);
+  r.setProperty('--fd', `'${BRAND.fonts.display.family}'`);
+  r.setProperty('--fm', `'${BRAND.fonts.mono.family}'`);
+  r.setProperty('--bw', BRAND.border + 'px');
+  r.setProperty('--sh', BRAND.shadow + 'px');
+  for (const el of [document.documentElement, document.body, $('frame')]) { el.style.width = W + 'px'; el.style.height = H + 'px'; }
+  $('dots').width = W; $('dots').height = H;
+}
+function init() {
+  ['shape', 'world', 'cursor', 'seedLabel', 'td1', 'td2', 'td3', 'tlabel', 'tbarRule', 'hl1', 'hlBlock', 'hl2', 'hl3', 'slap',
+    'ttl', 'info', 'tt1', 'tt2', 'tt3', 'tHead', 'tPrompt', 'tTyped', 'tCaret', 'tBusy', 'tDone',
+    'ind', 'divider', 'deckBoring', 'deckStyled', 'dkLabel', 'dkTrack', 'dkKnob', 'chTitle', 'chipCheck', 'chMeta', 'baseline',
+    'wkText', 'btnLabel', 'btnAsk', 'btnArrow', 'sticker', 'url', 'dateline', 'tip', 'logo', 'hudL', 'hudR', 'cap', 'debug'].forEach(id => EL[id] = $(id));
+  const txt = { seedLabel: COPY.tile, tlabel: COPY.label, hl1: COPY.hl[0], hl2: COPY.hl[1], hl3: COPY.hl[2], slap: COPY.slap,
+    ttl: COPY.title, info: COPY.info, tHead: COPY.termHead, tDone: COPY.done, dkLabel: COPY.toggle, chTitle: COPY.chartTitle,
+    chipCheck: COPY.check, chMeta: COPY.chartMeta, wkTitle: COPY.weekTitle, wkSub: COPY.weekSub, askText: COPY.ask, btnText: COPY.cta,
+    stickK: COPY.stickerK, stickV: COPY.stickerV, url: COPY.url, dateline: COPY.dateline, logo: BRAND.logo, hudL: COPY.hudL, hudR: COPY.hudR };
+  for (const [id, v] of Object.entries(txt)) $(id).textContent = v;
+  $('tipBox').innerHTML = COPY.tip;
+  EL.logo.style.display = BRAND.logo ? 'block' : 'none';
+  EL.dotsCtx = $('dots').getContext('2d');
+  EL.doodles = DOODLES.map(d => $(d.id));
+  EL.bursts = BURSTS.map((b, i) => $('burst' + i));
+  EL.ichips = ICHIPS.map(c => mk($('ichips'), 'c ichip', c.l, `background:${rgb(c.c)}`));
+  EL.tabs = COPY.tabs.map(s => mk($('tabs'), 'c tab', s));
+  boringSlide(EL.deckBoring, 440, 248);
+  EL.ss = styledSlide(EL.deckStyled, 440, 248, 440 / 570);
+  EL.bars = BARS.map(b => mk($('bars'), 'c bar', null, `width:${CH.bw}px;background:${rgb(b.c)}`));
+  EL.barLs = BARS.map(b => mk($('bars'), 'c bar-l', b.l));
+  EL.days = COPY.days.map(d => mk($('days'), 'c day', d));
+  EL.hl2w = EL.hl2.offsetWidth;
+  const gap = 4, widths = EL.tabs.map(e => e.offsetWidth + 46);
+  const total = widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1);
+  let x = -total / 2;
+  TABS = widths.map(w => { const r = { x0: x, x1: x + w, cx: x + w / 2 }; x += w + gap; return r; });
+  buildIndicator();
+  buildCursor();
+  /* screen-space frame: logo top left, hud lines at the bottom (9:16: at the top, clear of the platform buttons) */
+  const top = VERT ? H * 0.107 : 46 * US;
+  EL.logo.style.transform = `translate(${52 * US}px,${top}px) rotate(-1.5deg) scale(${US})`;
+  if (VERT) {
+    EL.hudL.style.display = 'none';
+    EL.hudR.style.transform = `translate(${W - 54 * US - EL.hudR.offsetWidth * US}px,${top + 14 * US}px) scale(${US})`;
+  } else {
+    EL.hudL.style.transform = `translate(${54 * US}px,${H - 44 * US - 24 * US}px) scale(${US})`;
+    EL.hudR.style.transform = `translate(${W - 54 * US - EL.hudR.offsetWidth * US}px,${H - 44 * US - 24 * US}px) scale(${US})`;
+  }
+  const capW = W * (VERT ? 0.86 : 0.8);
+  Object.assign(EL.cap.style, { width: capW + 'px', left: (W - capW) / 2 + 'px', fontSize: (VERT ? 64 : 50) * US + 'px' });
+  if (Q.has('debug')) EL.debug.style.display = 'block';
+}
+
+/* placement: world px, origin at the centre of the stage */
+let SH = null;
+function place(el, wx, wy, o = {}) {      // inside the shape (clipped)
+  const ax = o.ax ?? 0.5, ay = o.ay ?? 0.5, s = o.s ?? 1, rot = o.rot ?? 0;
+  const lx = wx - SH.left - BORDER, ly = wy - SH.top - BORDER;
+  el.style.transform = `translate(${lx.toFixed(2)}px,${ly.toFixed(2)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(4)}) translate(${-ax * 100}%,${-ay * 100}%)`;
+}
+function placeW(el, wx, wy, o = {}) {     // on top of / around the shape (not clipped)
+  const ax = o.ax ?? 0.5, ay = o.ay ?? 0.5, s = o.s ?? 1, rot = o.rot ?? 0;
+  el.style.transform = `translate(${wx.toFixed(2)}px,${wy.toFixed(2)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(4)}) translate(${-ax * 100}%,${-ay * 100}%)`;
+}
+function show(el, v, blur = 7) {
+  el.style.opacity = v.toFixed(3);
+  el.style.filter = v > 0.999 ? 'none' : `blur(${((1 - v) * blur).toFixed(2)}px)`;
+  el.style.visibility = v < 0.002 ? 'hidden' : 'visible';
+}
+const swap = v => 0.965 + 0.035 * v;
+const pressOff = l => l >= 0 ? -2.5 * l : -6 * l;
+const pressShadow = (l, base = BRAND.shadow) => l >= 0 ? base + 2.5 * l * (base > 0) : base + base * l;
+const popShow = (el, s, blur = 4) => show(el, clamp(s * 2, 0, 1), blur);
+
+/* dot grid on a canvas, with coloured ripples from the clicks */
+function drawDots(t, Z, camX, camY, rot) {
+  const ctx = EL.dotsCtx; ctx.clearRect(0, 0, W, H);
+  if (!BRAND.dots) return;
+  const sp = 26, cs = Math.cos(rot), sn = Math.sin(rot);
+  const toScreen = (wx, wy) => { const x = (wx - camX) * Z, y = (wy - camY) * Z; return [CX + x * cs - y * sn, CY + x * sn + y * cs]; };
+  const active = RIPPLES.map(r => ({ ...r, age: sinceB(t, r.b), p: toScreen(r.x, r.y) })).filter(r => r.age < 2.2);
+  const span = Math.hypot(W, H) / Z / 2 + sp;
+  const x0 = Math.floor((camX - span) / sp) * sp, y0 = Math.floor((camY - span) / sp) * sp;
+  const r0 = Math.max(1.1, 1.05 * Z);
+  const base = rgba(C.ink, 0.11);
+  for (let wx = x0; wx <= camX + span; wx += sp) {
+    for (let wy = y0; wy <= camY + span; wy += sp) {
+      const [sx, sy] = toScreen(wx, wy);
+      if (sx < -10 || sy < -10 || sx > W + 10 || sy > H + 10) continue;
+      let bump = 0, col = null, cw = 0;
+      for (const rp of active) {
+        const d = Math.hypot(sx - rp.p[0], sy - rp.p[1]), R = 1650 * rp.age;
+        const k = 4.2 * rp.s * Math.exp(-rp.age / 0.9) * Math.exp(-Math.pow((d - R) / 85, 2));
+        if (k > bump) { bump = k; col = rp.c; cw = clamp(k / 1.4, 0, 1); }
+      }
+      ctx.fillStyle = col && cw > 0.02 ? rgba(mix(C.ink, col, 0.25 + 0.75 * cw), 0.11 + 0.89 * cw) : base;
+      ctx.beginPath(); ctx.arc(sx, sy, r0 * (1 + bump), 0, 6.2832); ctx.fill();
+    }
+  }
+}
+
+/* camera: zoom (breathing drift + kicks), focus point, tilt */
+function camera(t) {
+  const drift = 1 + 0.012 * Math.sin(2 * Math.PI * t / (T / 4));
+  const [camX, camY] = S_CAM(t), rotDeg = S_ROT(t);
+  const [, , sw, sh] = S_SHAPE(t);       // never wider than 92% of the frame or taller than 80% (matters in 9:16 and 1:1)
+  const z = Math.min(S_ZOOM(t) * FZ, 0.92 * W / Math.max(40, sw), 0.8 * H / Math.max(40, sh));
+  return { Z: z * drift * (1 + S_KICK(t)), camX, camY, rotDeg, rot: rotDeg * Math.PI / 180 };
+}
+/* the cursor in screen px: it lives in world space (sticks to what it points at) but draws at a constant size */
+function cursorScreen(tIn) {
+  const t = mod(tIn, T), { Z, camX, camY, rot } = camera(t), [cwx, cwy] = cursorWorld(t);
+  const qx = (cwx - camX) * Z, qy = (cwy - camY) * Z;
+  return [CX + qx * Math.cos(rot) - qy * Math.sin(rot), CY + qx * Math.sin(rot) + qy * Math.cos(rot)];
+}
+
+/* captions: phrases from captions.js, the spoken word highlighted */
+const CAPS = window.CAPS || [];
+const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+function renderCaps(t) {
+  const p = CAPS.find(c => t >= c.s && t < c.end);
+  if (!p) { show(EL.cap, 0, 0); return; }
+  if (EL.cap._p !== p) {
+    EL.cap.innerHTML = p.w.map(w => `<span>${esc(w[0])}</span>`).join(' ');
+    EL.cap._p = p;
+    const ch = EL.cap.offsetHeight;
+    EL.cap.style.top = ((VERT ? H * 0.76 : H - 150 * US) - ch / 2).toFixed(1) + 'px';
+  }
+  const fin = p.cin ? 1 : clamp((t - p.s) / 0.12, 0, 1), fout = p.cout ? 1 : clamp((p.end - t) / 0.1, 0, 1);
+  show(EL.cap, Math.min(fin, fout), 6);
+  [...EL.cap.children].forEach((sp, i) => {
+    const said = t >= p.w[i][1], next = i + 1 < p.w.length ? p.w[i + 1][1] : p.end, now = said && t < next;
+    sp.style.background = now ? rgb(C.a1) : 'transparent';
+    sp.style.color = said ? INK : rgba(C.ink, 0.35);
+  });
+}
+
+/* ======================= seek(t): the whole frame, from time alone ======================= */
+function seek(tIn) {
+  const t = mod(tIn, T), beat = t / BEAT;
+  const { Z, camX, camY, rotDeg, rot } = camera(t);
+  EL.world.style.transform = `translate(${CX}px,${CY}px) rotate(${rotDeg.toFixed(3)}deg) scale(${Z.toFixed(5)}) translate(${(-camX).toFixed(3)}px,${(-camY).toFixed(3)}px)`;
+  drawDots(t, Z, camX, camY, rot);
+
+  /* the shape */
+  let [x, y, w, h, rad] = S_SHAPE(t);
+  w = Math.max(40, w); h = Math.max(40, h);
+  rad = Math.min(rad * (h / 2 <= rad ? 1 : RAD), h / 2, w / 2);
+  const lift = S_LIFT(t), off = pressOff(lift), shadow = pressShadow(lift);
+  SH = { x, y, w, h, left: x - w / 2, top: y - h / 2 };
+  const s = EL.shape.style;
+  s.width = w.toFixed(2) + 'px'; s.height = h.toFixed(2) + 'px';
+  s.transform = `translate(${(SH.left + off).toFixed(2)}px,${(SH.top + off).toFixed(2)}px)`;
+  s.borderRadius = rad.toFixed(2) + 'px';
+  s.background = rgb(S_BG(t));
+  s.boxShadow = shadow > 0 ? `${shadow.toFixed(2)}px ${shadow.toFixed(2)}px 0 0 ${INK}` : 'none';
+
+  /* TILE */
+  const vseed = vis(t, 57.8, 0.3, 0.2, 0.08, 0.05);
+  show(EL.seedLabel, vseed); place(EL.seedLabel, 0, 2, { s: swap(vseed) * (1 + 0.04 * Math.exp(-mod(t, BEAT) * 8) * (inWin(t, 58, 0.3) ? 1 : 0)) });
+
+  /* OPENING WINDOW: headline, sticker, bursts, doodles */
+  const vwin = vis(t, 0.45, 7.0, 0.2, 0.1, 0.02);
+  const bounce = i => 1 + 0.25 * Math.exp(-mod(t - B(i * 0.33), BEAT) * 7);
+  [EL.td1, EL.td2, EL.td3].forEach((el, i) => { show(el, vwin, 3); place(el, -350 + 28 + i * 24, -187, { s: swap(vwin) * bounce(i) }); });
+  show(EL.tlabel, vwin); place(EL.tlabel, -350 + 108, -187, { ax: 0, s: swap(vwin) });
+  show(EL.tbarRule, vwin, 0); place(EL.tbarRule, -350, -163, { ax: 0, ay: 0 });
+  const out7 = inWin(t, 7.0, 8) ? 1 - clamp(sinceB(t, 7.0) / 0.1, 0, 1) : 1;
+  const h1 = HL1(t), h2 = HL2(t), h3 = HL3(t), hb = HL_BLOCK(t);
+  show(EL.hl1, Math.min(clamp(h1 * 1.6, 0, 1), out7), 8); place(EL.hl1, -312, -110 + (1 - clamp(h1, 0, 1.2)) * 40, { ax: 0 });
+  EL.hlBlock.style.width = (EL.hl2w + 34).toFixed(1) + 'px'; EL.hlBlock.style.height = '104px';
+  show(EL.hlBlock, clamp(hb * 3, 0, 1), 0);
+  EL.hlBlock.style.transformOrigin = '0 50%';
+  place(EL.hlBlock, -330, -30, { ax: 0, ay: 0.5, rot: -1.5 });
+  EL.hlBlock.style.transform += ` scaleX(${Math.max(0, hb).toFixed(4)})`;
+  show(EL.hl2, Math.min(clamp(h2 * 1.6, 0, 1), out7), 8); place(EL.hl2, -313, -26, { ax: 0, s: 1.2 - 0.2 * clamp(h2, 0, 1.2) });
+  show(EL.hl3, Math.min(clamp(h3 * 1.6, 0, 1), out7), 8); place(EL.hl3, -312, 72 + (1 - clamp(h3, 0, 1.2)) * 46, { ax: 0 });
+  const sl = SLAP(t), [spx, spy] = SLAP_POS(t);
+  popShow(EL.slap, sl, 3);
+  EL.slap.style.fontSize = lerp(30, 18, clamp((t - B(7.25)) / B(1), 0, 1) * (inWin(t, 7.25, 12) ? 1 : 0)).toFixed(2) + 'px';
+  placeW(EL.slap, SH.x + spx, SH.y + spy, { s: Math.max(0, sl) * (1 + 0.6 * Math.max(0, 1 - sl)), rot: -6 + (1 - clamp(sl, 0, 1)) * 24 });
+  BURSTS.forEach((b, i) => {
+    const v = clamp(BURST_S[i](t), 0, 1.2);
+    EL.bursts[i].style.width = b.d + 'px'; EL.bursts[i].style.height = b.d + 'px';
+    show(EL.bursts[i], v > 0.01 ? 1 : 0, 0);
+    placeW(EL.bursts[i], 0, 0, { s: Math.max(0.001, v) });
+  });
+  DOODLES.forEach((d, i) => {
+    const v = DOODLE_S[i](t), fl = Math.sin(2 * Math.PI * (t / 2.1 + i * 0.27)) * 6;
+    popShow(EL.doodles[i], v, 3);
+    placeW(EL.doodles[i], d.x, d.y + fl, { s: Math.max(0, v), rot: d.r + (1 - clamp(v, 0, 1)) * 30 + fl * 0.4 });
+  });
+
+  /* TITLE PILL + INFO PILL */
+  const vt = vis(t, 7.55, 11.5, 0.24, 0.12, 0.04);
+  show(EL.ttl, vt); place(EL.ttl, 0, SH.y + 1, { s: swap(vt) });
+  const vin = vis(t, 11.7, 17.75, 0.24, 0.12, 0.04);
+  show(EL.info, vin); place(EL.info, -290, SH.y - 22, { ax: 0, s: swap(vin) });
+  let cx = -290;
+  EL.ichips.forEach((el, i) => {
+    const sc = ICHIP_S[i](t);
+    popShow(el, sc * (vin > 0 ? 1 : 0)); place(el, cx, SH.y + 30, { ax: 0, s: Math.max(0, sc) });
+    cx += el.offsetWidth + 10;
+  });
+
+  /* TERMINAL: a prompt types, it renders, done */
+  const vterm = vis(t, 17.95, 25.75, 0.22, 0.12, 0.05);
+  [EL.tt1, EL.tt2, EL.tt3].forEach((el, i) => { show(el, vterm, 3); place(el, -400 + 28 + i * 24, -118, { s: swap(vterm) }); });
+  const th = T_HEAD(t);
+  show(EL.tHead, vterm); place(EL.tHead, -400 + 104, -118, { ax: 0, s: swap(vterm) * (1 + 0.18 * th) });
+  EL.tHead.style.color = rgba(mix(C.canvas, C.a1, clamp(th * 3, 0, 1)), 0.6 + 0.4 * clamp(th * 3, 0, 1));
+  const nP = inWin(t, 17.5, 26) ? Math.round(clamp((t - B(PROMPT_B0)) / (B(PROMPT_B1) - B(PROMPT_B0)), 0, 1) * PROMPT.length) : 0;
+  EL.tTyped.textContent = PROMPT.slice(0, nP);
+  EL.tCaret.style.opacity = nP < PROMPT.length ? 1 : (mod(beat, 1) < 0.5 ? 1 : 0);
+  show(EL.tPrompt, vterm); place(EL.tPrompt, -400 + 30, -56, { ax: 0 });
+  const vbusy = Math.min(vis(t, 21.75, 23.5, 0.16, 0.1, 0), vterm), vdone = Math.min(vis(t, 23.5, 25.75, 0.16, 0.12, 0), vterm);
+  EL.tBusy.textContent = COPY.busy + ' ' + ['·  ', '·· ', '···'][Math.floor(mod(beat * 2, 3))];
+  show(EL.tBusy, vbusy, 4); place(EL.tBusy, -400 + 30, 10, { ax: 0 });
+  show(EL.tDone, vdone, 4); place(EL.tDone, -400 + 30, 10 + (1 - vdone) * 10, { ax: 0, s: 0.96 + 0.04 * vdone });
+
+  /* TABS: a liquid indicator; the card under it */
+  const vind = inWin(t, 25.6, 38.05) ? (inWin(t, 37.75, 38.05) ? 1 - clamp(sinceB(t, 37.75) / 0.12, 0, 1) : 1) : 0;
+  const iL = IND_L(t), iR = IND_R(t), iT = IND_T(t), iB = IND_B(t);
+  EL.ind.style.width = Math.max(10, iR - iL).toFixed(2) + 'px';
+  EL.ind.style.height = Math.max(10, iB - iT).toFixed(2) + 'px';
+  EL.ind.style.borderRadius = (IND_RAD(t) * Math.min(1, RAD * 2)).toFixed(2) + 'px';
+  EL.ind.style.background = rgb(C.a2);
+  show(EL.ind, vind, 0); place(EL.ind, iL, iT, { ax: 0, ay: 0 });
+  const vtab = vis(t, 25.85, 37.75, 0.2, 0.12, 0.05);
+  EL.tabs.forEach((el, i) => {
+    const v = Math.min(vis(t, 25.85 + i * 0.1, 37.75, 0.2, 0.12, 0.05), vtab);
+    show(el, v, 5);
+    el.style.color = rgba(C.ink, 0.45 + 0.55 * clamp(TAB_ACTIVE[i](t), 0, 1));
+    place(el, TABS[i].cx, 1, { s: swap(v) });
+  });
+  const vcard = vis(t, 27.15, 37.75, 0.24, 0.12, 0.1);
+  show(EL.divider, vcard, 0); place(EL.divider, -280, 40, { ax: 0, ay: 0 });
+  /* card 1: a toggle turns a plain slide into an on-brand one */
+  const vdk = vis(t, 27.25, 32.5, 0.24, 0.12, 0.08), on = clamp(DK_ON(t), 0, 1);
+  show(EL.dkLabel, vdk); place(EL.dkLabel, DK.x0 - 14, DK.y, { ax: 1, s: swap(vdk) });
+  const dl = DK_LIFT(t), doff = dl < 0 ? -2 * dl : 0;
+  EL.dkTrack.style.background = rgb(mix(C.canvas, C.a3, on));
+  show(EL.dkTrack, vdk); place(EL.dkTrack, (DK.x0 + DK.x1) / 2 + doff, DK.y + doff, { s: swap(vdk) });
+  const kL = DK_L(t), kR = DK_R(t);
+  EL.dkKnob.style.width = Math.max(28, kR - kL).toFixed(2) + 'px';
+  show(EL.dkKnob, vdk, 0); place(EL.dkKnob, kL + doff, DK.y - 14 + doff, { ax: 0, ay: 0 });
+  const vboring = Math.min(vdk, 1 - vis(t, 29.45, 32.5, 0.16, 0.1, 0));
+  show(EL.deckBoring, vboring, 5); place(EL.deckBoring, 0, 250, { s: swap(vboring) });
+  const vstyled = Math.min(vis(t, 29.45, 32.5, 0.2, 0.12, 0), vdk);
+  show(EL.deckStyled, vstyled, 5); place(EL.deckStyled, 0, 250, { s: 0.97 + 0.03 * vstyled });
+  const ssk = SS_STICK(t);
+  EL.ss.stick.style.transform = `rotate(${(6 + (1 - ssk) * 10).toFixed(2)}deg) scale(${Math.max(0, ssk).toFixed(3)})`;
+  EL.ss.bars.forEach((el, i) => { el.style.transform = `scaleY(${Math.max(0, SS_BARS[i](t)).toFixed(3)})`; });
+  /* card 2: a chart that adds up */
+  const vch = vis(t, 32.6, 37.75, 0.24, 0.12, 0.08);
+  show(EL.chTitle, vch); place(EL.chTitle, -262, CH.titleY, { ax: 0, s: swap(vch) });
+  const ck = CHECK(t);
+  show(EL.chipCheck, clamp(ck * 2, 0, 1) * vch, 4); place(EL.chipCheck, -262 + EL.chTitle.offsetWidth + 16, CH.titleY, { ax: 0, s: Math.max(0, ck) });
+  show(EL.chMeta, vch); place(EL.chMeta, 262, CH.titleY + 1, { ax: 1, s: swap(vch) });
+  show(EL.baseline, vch, 0); place(EL.baseline, -232, CH.base, { ax: 0, ay: 0 });
+  BARS.forEach((b, i) => {
+    const hh = Math.max(0, BAR_H[i](t)) * b.v / BAR_MAX * CH.maxH, el = EL.bars[i];
+    el.style.height = Math.max(0.01, hh).toFixed(2) + 'px';
+    show(el, hh > 0.5 ? vch : 0, 0); place(el, barCx(i), CH.base + 1.5, { ax: 0.5, ay: 1 });
+    show(EL.barLs[i], vch); place(EL.barLs[i], barCx(i), CH.base + 24, { s: swap(vch) });
+  });
+  const vtip = Math.min(vis(t, 34.75, 37.6, 0.16, 0.1, 0), vch);
+  show(EL.tip, vtip, 5);
+  placeW(EL.tip, barCx(0), CH.base - CH.maxH - 12, { ax: 0.5, ay: 1, s: 0.92 + 0.08 * vtip });
+
+  /* WEEK PILL: the days tick off */
+  const vw = vis(t, 38, 43.75, 0.22, 0.12, 0.06);
+  show(EL.wkText, vw); place(EL.wkText, -320 + 34, 0, { ax: 0, s: swap(vw) });
+  EL.days.forEach((el, i) => {
+    const on2 = clamp(DAY_ON[i](t), 0, 1.15);
+    el.style.background = rgb(mix(C.light, C.a3, clamp(on2, 0, 1)));
+    el.textContent = on2 > 0.5 ? '✓' : COPY.days[i];
+    show(el, vis(t, 38.1 + i * 0.08, 43.75, 0.2, 0.12, 0.04));
+    place(el, 30 + i * 56, 0, { s: swap(vw) * (1 + 0.08 * Math.max(0, on2 - 1) * 6) });
+  });
+
+  /* BUTTON: the question, then the CTA; the click goes home to the tile */
+  const vb = vis(t, 46, 57.6, 0.18, 0.1, 0.02), va = vis(t, 43.95, 46, 0.2, 0.1, 0.05);
+  show(EL.btnLabel, vb); place(EL.btnLabel, 0, 1, { s: swap(vb) });
+  show(EL.btnAsk, va); place(EL.btnAsk, 0, 1, { s: swap(va) });
+  EL.btnArrow.style.transform = `translateX(${ARROW(t).toFixed(2)}px)`;
+  const st = STICK(t);
+  show(EL.sticker, clamp(st * 1.4, 0, 1), 5);
+  placeW(EL.sticker, SH.x + 134 + off, SH.y - 50 + off, { s: Math.max(0, st), rot: STICK_ROT(t) });
+  const vu = vis(t, 47.5, 57.6, 0.22, 0.12, 0), vd = vis(t, 48.5, 57.6, 0.22, 0.12, 0);
+  show(EL.url, vu, 5); placeW(EL.url, 0, 86 + (1 - vu) * 8, { s: 0.94 + 0.06 * vu });
+  show(EL.dateline, vd, 5); placeW(EL.dateline, 0, 124 + (1 - vd) * 8, { s: 0.94 + 0.06 * vd });
+
+  /* captions and cursor (screen space) */
+  renderCaps(t);
+  const [sx, sy] = cursorScreen(t);
+  const cs = (1.0 - 0.14 * clamp(PRESS(t), 0, 1.2)) * US;
+  EL.cursor.style.transform = `translate(${(sx - 2.2 * 2.9 * US).toFixed(2)}px,${(sy - 1.6 * 2.9 * US).toFixed(2)}px) scale(${cs.toFixed(4)})`;
+
+  if (EL.debug.style.display === 'block') EL.debug.textContent = `t ${t.toFixed(2)}s · beat ${beat.toFixed(2)} · bar ${Math.floor(beat / 4) + 1}.${Math.floor(beat % 4) + 1}`;
+}
+
+/* ======================= boot ======================= */
+window.DURATION = T; window.BEATS = BEATS; window.BPM = BPM; window.BEAT = BEAT; window.W = W; window.H = H;
+window.seek = seek; window.cursorScreen = cursorScreen;
+window.FONT_CHECKS = Object.values(BRAND.fonts).flatMap(f => (f.weights || [400]).map(wt => `${wt} 20px "${f.family}"`));
+window.__ready = false;
+const DECODE = [];   // ids of <img> elements (photo stickers) that must be decoded before the first frame
+(async () => {
+  applyBrand();
+  const css = [];
+  for (const f of Object.values(BRAND.fonts)) {
+    if (f.src) css.push(`@font-face{font-family:'${f.family}';src:url('${f.src}');font-weight:100 900;font-display:block}`);
+  }
+  if (css.length) { const st = document.createElement('style'); st.textContent = css.join('\n'); document.head.appendChild(st); }
+  const fams = Object.values(BRAND.fonts).filter(f => f.google).map(f => 'family=' + f.google);
+  if (fams.length) {
+    const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = `https://fonts.googleapis.com/css2?${fams.join('&')}&display=block`;
+    await new Promise(res => { l.onload = l.onerror = res; document.head.appendChild(l); setTimeout(res, 8000); });
+  }
+  const timeout = new Promise(res => setTimeout(res, 8000));      // offline: render with fallback fonts, qa.py flags it
+  await Promise.race([Promise.all([...window.FONT_CHECKS.map(f => document.fonts.load(f)), ...DECODE.map(id => $(id).decode())]), timeout]);
+  init();
+  seek(0);
+  window.__ready = true;
+  if (Q.has('t')) { seek(parseFloat(Q.get('t'))); return; }
+  if (!Q.has('still')) {
+    const t0 = performance.now();
+    const loop = () => { seek((performance.now() - t0) / 1000); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
