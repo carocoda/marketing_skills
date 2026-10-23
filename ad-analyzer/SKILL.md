@@ -1,92 +1,115 @@
 ---
 name: ad-analyzer
-description: Analyses ads, your own or a competitor's. (A) Tears down a single ad (video file, image, screenshot or Meta Ad Library link) on stopping power, hook, offer, proof, visuals and CTA, with scores, what to borrow, what to fix and three test variants. (B) Crunches an Ads Manager export (CSV or Excel) into hook rate, hold rate, CTR, CPM, CPC, frequency and cost per result, says which ads win and why, names the weak link per ad and what to test next. Use whenever someone types /ad-analyzer, asks to analyse, break down, review, score or roast an ad or a creative, shares a Meta Ads Manager export or ad report, asks which ad works best or why an ad isn't performing, or wants to dissect a competitor ad from the Ad Library. Replies in the user's language.
+description: Audits a whole Meta ads campaign and tells you why it does or doesn't sell, then what to change first. Reads the numbers in Ads Manager (read-only, in the browser or from an export), the campaign and ad set settings, the pixel events in Events Manager and the sales on your checkout or ticket platform, checks every creative, compares it all with current benchmarks, does the funnel math (cost per sale, break-even, what the budget can still buy) and ends with advice in order of impact, including a stop rule. Also tears down a single ad, yours or a competitor's from the Ad Library. Use whenever someone types /ad-analyzer, asks to check, analyse, audit or review their Meta, Facebook or Instagram ads or campaign, asks why ads get clicks but no sales, wants advice on ads for an event, webinar, workshop, course or product launch, shares an Ads Manager link, export or screenshot, or wants a competitor ad broken down. Replies in the user's language.
 ---
 
 # Ad analyzer
 
-Pick the mode from the input. Have both the creatives and the results? Do mode B first, then mode A for the winner and the biggest loser.
+Most campaigns don't fail on the ad. They fail on the setup (wrong optimisation event, too few placements, a pixel that never fired), on the math (the budget can't buy enough visitors to sell anything) or on the offer. So this skill looks at the whole chain, from impression to sale, before it says anything about the creative.
 
-## Step 0: context (own ads only, keep it short)
+There are two modes:
 
-If a file called `ad-profile.md` exists in the project, read it and skip these questions. Also skip anything already answered in the conversation or project files. For a competitor teardown, skip this step and only ask what the person wants to learn from the ad if that isn't clear.
+- **Campaign audit** (the default): everything below, step 1 to 7.
+- **Single ad teardown**: only step 5, for one ad or a competitor's ad. Use it when that's all the person asks for.
 
-For the person's own ads, ask in one numbered message, with a default in brackets so "ok" is a valid answer, then wait:
+Never change anything in an ad account. Read, don't click Publish, Save, Turn off, Delete or Duplicate. If you notice unpublished drafts or changes you didn't make, report them and leave them alone.
 
-1. **The result that counts.** What should the ad get people to do? (my guess: from the export's result column)
-2. **Target cost.** What cost per result is good for you? (default: rank within the account, no fixed target)
-3. **Audience.** Cold, warm (visitors, followers) or a mix? (default: cold)
-4. **Landing page.** Link to where the ad sends people, so I can check it matches. (default: skip)
-5. **House rules.** Anything your ads must always or never do: words, claims, names, logos, subtitles? (default: none)
+## Step 1: the brief (one message, then wait)
 
-Offer to save the answers to `ad-profile.md` in their project (or as text they can paste next time, in a chat-only setup), so the next run doesn't ask again.
+If `ad-profile.md` exists in the project, read it and only ask what's missing. Skip anything already answered in the conversation. Ask in one numbered message, each with a default in brackets so "ok" is a valid answer:
 
-## Mode A: tear down one ad
+1. **What you sell.** Product, event, course or lead magnet, the price and any price step (early bird, launch discount). (my guess from the ads)
+2. **The result that counts.** Sale, ticket, sign-up or lead. And the date or deadline that matters. (default: the result Ads Manager optimises for)
+3. **Target.** How many sales you need from ads, or a cost per sale you can live with. (default: I'll calculate break-even)
+4. **Where the sale happens.** Your own site, a checkout tool, a ticket platform (Luma, Eventbrite, Tito), a form. (default: the landing page in the ads)
+5. **Access.** How can I see the numbers?
+   a. I'm logged in to Ads Manager in the browser you can use (read-only)
+   b. an export (CSV or Excel) at ad level
+   c. screenshots
+   (default: a, falling back to b)
+6. **Budget and dates.** Daily budget and end date, or what's left to spend. (default: from the campaign settings)
+7. **House rules.** Words, claims, names or logos your ads must always or never use. (default: none)
 
-### Get the input in
+Offer to save the answers to `ad-profile.md` (or as text to paste next time in a chat-only setup).
 
-**Video file.** Run the helper script from this skill's folder (`scripts/extract.py`). It writes everything to an output folder, never next to the original:
+## Step 2: collect the numbers
 
-```bash
-python3 scripts/extract.py "<ad.mp4>" --out "<work-folder>/<ad-name>"
-```
+Work through `references/campaign-audit.md`. In short:
 
-It writes `info.json` (duration, size, aspect ratio, audio yes/no), `frames/` (1 frame per second), `hook/` (the first 3 seconds at 4 frames per second) and `transcript.txt` with timestamps. Options: `--lang en|nl|de|...` to force a language (default: detected from the ad), `--model small|medium|large-v3` (default `small`; `large-v3` is more accurate for non-English speech but a large download), `--no-transcript`.
+- **Ads Manager, per ad:** spend, impressions, reach, frequency, CPM, link clicks, CTR (link), CPC, landing page views, results and cost per result, and for video: 3-second plays, ThruPlays. Plus the quality, engagement and conversion rankings.
+- **Breakdowns:** placement, age, gender, region or country. Placement is the one that most often explains a high CPM.
+- **Settings (open the edit screen, read only):** objective, optimisation event, conversion location, attribution window, audience and locations, Advantage+ audience on or off, placements, budget, schedule and end date, ads that are on or off, unpublished drafts.
+- **Events Manager:** which events the pixel received (PageView, InitiateCheckout, Purchase or Lead), when it last saw each, diagnostics warnings, domains.
+- **Where the sale happens:** sales or sign-ups in the period, by source or UTM if the platform shows it, discount codes used, the last sale date. This is the source of truth; Ads Manager only counts what it can attribute.
 
-Transcription uses faster-whisper if installed (`pip install faster-whisper`), otherwise the openai-whisper CLI (`pip install openai-whisper`). If neither is installed, the script still makes the frames and `transcript.txt` says so: work from the frames only, read any on-screen captions yourself, and say clearly in the report that you had no audio transcript. Offer the install command, don't insist.
+Exports: map the columns with `references/ads-manager-columns.md`. Calculate with pandas and show the formulas. Never make up a number. If you can't see something, say so and say how to get it.
 
-No script available (plain chat)? Ask for screenshots of the first frame, a few key frames and the end card, plus the spoken text if there is any.
+## Step 3: check the setup
 
-Then:
-- Look at **all** hook frames, and a representative selection of the rest (every scene change, the offer, the end card).
-- Fix transcription errors yourself: brand and product names often come out wrong (like "Cloud" for "Claude"). Check them against what's on screen.
-- English-only models (`*.en`) can't transcribe other languages. If the transcript looks like nonsense for a non-English ad, rerun with `--lang` and a multilingual model.
+Go through the checklist in `references/campaign-audit.md`. The usual suspects:
 
-**Image or screenshot.** Just look at it.
+- **Optimising for an event that never happens.** A campaign optimised for Purchase with zero purchases on the pixel can't learn. Meta needs roughly 50 optimisation events per ad set per week to leave the learning phase. Small sales volumes never get there.
+- **Placements too narrow.** Stories or Reels only, or a single platform, usually means a much higher CPM.
+- **Tracking not proven.** No test purchase seen in Events Manager, the checkout platform's domain not allowed, the pixel shared with another site.
+- **Schedule.** End date before the deadline, or the budget runs out before the moment people buy (for events: the last two weeks).
+- **Budget spread thin.** Several ad sets that each get too little to learn.
+- **Small samples.** Under ~1,000 impressions or under 5 results per ad is not proof. Say "not proof yet" instead of naming a winner.
+- **Bot traffic.** Visits from cities with Meta data centres (Luleå, Clonee, Fort Worth, Forest City and the like) on the landing page are link checks, not people.
 
-**Ad Library link.** Open it in the browser if you can and read it: primary text, headline, CTA button, start date, platforms, number of versions. An ad that has run for a long time with many versions is likely a winner for that advertiser. If you can't open it, ask for a screenshot.
+## Step 4: benchmarks and research
 
-### Analysis (in this order)
+Compare with `references/benchmarks.md`. Those figures are dated and mostly from vendors: if you can search the web, check for newer numbers for this industry, country and product type, and label every figure:
 
-1. **Stopping power (0 to 3 seconds, or the image itself):** what do you see and hear first? Would a thumb stop? With the sound off, does it still make sense?
-2. **Hook:** the first line spoken or shown. Which mechanic: pain, curiosity, result, recognition, contrarian?
-3. **Offer:** what you get, for whom, for what price, and why now (deadline, limited spots)?
-4. **Proof:** real people, numbers, logos, demo, testimonials. What's missing?
-5. **Visuals and pace:** subtitles, scene changes, safe zones (the Reels and Stories interface covers the top and bottom), brand recognition.
-6. **CTA:** is it clear what to do next? Does the ad match the landing page?
-7. **Format:** 9:16, 4:5 or 1:1, length, and does it fit the placement?
+- **[O]** official, from Meta or the platform's own docs
+- **[P]** practice: agencies, vendors, marketers (often with a commercial interest)
+- **[R]** your own calculation
 
-### Output
-- A score from 1 to 10 for each part (stopping power, hook, offer, proof, visuals, CTA), with one line of explanation.
-- **Borrow:** 3 things that work and that you can use in your own ads (the idea, not the words).
-- **Fix:** 3 concrete changes.
-- **Test variants:** 3 variants that each change one thing only (only the hook, only the visual, only the offer), so the test tells you something.
+The person's own history beats any benchmark. When there's no reliable benchmark (often the case for niche B2B offers), say so.
 
-## Mode B: results from Ads Manager
+## Step 5: the creatives
 
-### Input
-A CSV or Excel export at ad level. Useful columns: impressions, reach, amount spent, link clicks, results and cost per result, 3-second video plays, ThruPlays, video plays at 25/50/75/100%.
+For each ad (or the one the person asked about):
 
-Column names differ per account, preset and language. Read the header row, map whatever is there using `references/ads-manager-columns.md`, and list what you found, what you guessed and what's missing. Calculate with what's there. Watch for totals rows, numbers stored as text, decimal commas and daily breakdowns (see the reference).
+- **Get it in.** Video file: run `python3 scripts/extract.py "<ad.mp4>" --out "<work>/<ad-name>"`. It writes `info.json`, one frame per second, the first 3 seconds at 4 frames per second and a timestamped transcript (faster-whisper, or the openai-whisper CLI, or frames only if neither is installed). Options: `--lang`, `--model`, `--no-transcript`. In Ads Manager: open the ad preview. Ad Library link: read text, headline, CTA, start date and number of versions (long-running ads with many versions are likely winners). No tools: ask for screenshots of the first frame, key frames and the end card.
+- Check brand names in the transcript against the screen ("Cloud" for "Claude" is a classic).
+- **Score 1 to 10, one line each:** stopping power (first 3 seconds, sound off too), hook, offer (what, for whom, price, why now), proof, visuals and pace (captions, safe zones, brand max ~25% of the time), CTA and match with the landing page, format fit for the placement.
+- Tie it to the numbers: low hook rate = the opening; good hook, low hold = the middle; good CTR, no sales = landing page, offer or tracking; high CPM = placement, audience or a low quality ranking.
+- **Single ad teardown output:** the scores, 3 things worth borrowing (the idea, never the words), 3 fixes, 3 test variants that each change one thing.
 
-No code available? Ask the person to paste the table, and calculate by hand for the top ads only.
+## Step 6: the math
 
-### Calculate (with pandas, show the formulas)
-- **CTR (link)** = link clicks / impressions
-- **CPM** = spend / impressions x 1000
-- **CPC** = spend / link clicks
-- **Hook rate** = 3-second plays / impressions (rule of thumb: under 25% is weak, over 35% is strong)
-- **Hold rate** = ThruPlays / 3-second plays
-- **Cost per result** and **frequency** (impressions / reach; above ~3 on cold audiences hints at fatigue)
+Do it in a small table, and show it:
 
-### Verdict
-- Rank on cost per result, within one result type. An ad with fewer than ~1,000 impressions or fewer than 5 results is **not proof yet**: put it in a separate group instead of calling it a winner or loser.
-- Name the weak link per ad: low hook rate = the opening; good hook but low hold = the middle; good CTR but expensive results = the landing page or the offer; high CPM = the audience or the placement.
-- Add short advice: what to turn off, what to scale, what to test next week.
+- Cost per landing page visit now, and at a normal CPM for this market.
+- Expected sales = visits x conversion rate (use the person's own rate if known, otherwise a range from the benchmarks, say 1 to 3%).
+- Cost per sale now and after the fixes.
+- Break-even or target: the price, minus costs, or the agency rule of thumb of 15 to 25% of the price per sale for events.
+- What the remaining budget can still buy before the deadline.
+
+If the numbers say ads alone can't hit the target, say it plainly and point to the channels that can (email list, past buyers, partners, direct outreach).
+
+## Step 7: the report
+
+Advice first, details below. Short, with headings and tables.
+
+1. **Verdict in 3 to 5 lines.** What's going on, in plain words.
+2. **The numbers.** One table per ad, plus totals.
+3. **Advice in order of impact**, each with the reason and the exact place to change it in Ads Manager:
+   - the fastest route to sales (often warm channels before a deadline)
+   - setup fixes (optimisation event, placements, schedule, budget)
+   - creatives (what to cut, what to add: real variety in angle, person and format, not just a new first line)
+   - retargeting (who, when, budget, exclude buyers)
+   - the landing page or checkout
+   - measurement (source of truth, test purchase, UTMs)
+4. **A stop rule.** For example: "No sale with source = Meta after €X spend: stop prospecting, keep retargeting only."
+5. **Open points.** Drafts you saw, data you couldn't reach, what you assumed.
+
+Offer to write it as a page or document the team can read.
 
 ## Rules
-- Never make up numbers. Only calculate with what's in the export, and say when a sample is too small.
-- For a competitor's ad: take the idea, never copy their words or visuals.
-- For the person's own ads: apply their house rules from step 0 to every suggestion and test variant.
-- Keep the report short, with headings and tables. Advice first, details below.
+
+- Read-only in every account. Never publish, save, pause, delete or edit. Logging in is the person's job; never type passwords.
+- Never make up numbers. Label benchmarks with their source and date, and say when a sample is too small.
+- For competitor ads: take the idea, never their words or visuals.
+- Apply the house rules from step 1 to every suggestion.
 - Write in the person's language. No hype words or AI phrases.

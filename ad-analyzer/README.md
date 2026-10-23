@@ -1,31 +1,32 @@
 # Ad analyzer
 
-A skill for Claude and ChatGPT that tells you why an ad works or doesn't. It does two things:
+A skill for Claude and ChatGPT that audits your Meta ads campaign the way a good media buyer would: from the first impression to the actual sale. Most campaigns don't fail on the ad itself. They fail on the setup, the tracking or the math. This skill checks all of it and tells you what to change first.
 
-**A. Tear down one ad.** Your own or a competitor's: a video file, an image, a screenshot or a Meta Ad Library link.
-- Scores stopping power, hook, offer, proof, visuals and CTA from 1 to 10, with one line each
-- Lists 3 things worth borrowing (the idea, not the words) and 3 concrete fixes
-- Writes 3 test variants that each change one thing, so the test tells you something
-- For video, pulls out frames (every second, plus the first 3 seconds up close) and a timestamped transcript
+**What it does**
 
-**B. Crunch your Ads Manager export.** A CSV or Excel file at ad level.
-- Calculates hook rate, hold rate, CTR, CPM, CPC, frequency and cost per result, and shows the formulas
-- Ranks the ads, and keeps ads with too little data apart instead of calling them winners
-- Names the weak link per ad (the opening, the middle, the landing page, the audience)
-- Says what to turn off, what to scale and what to test next
+- Asks a few questions first: what you sell, the result that counts, your target, where the sale happens and how it can see your numbers
+- Reads your numbers per ad in Ads Manager (read-only, in the browser) or from an export or screenshots
+- Checks the setup: objective, optimisation event, placements, audience, budget, end date, drafts nobody published
+- Checks tracking: which events the pixel actually received, and the sales on your own checkout or ticket platform as the source of truth
+- Looks at every creative: stopping power, hook, offer, proof, visuals, CTA, with video frames and a transcript
+- Compares with current benchmarks, labelled as official, practice or its own calculation
+- Does the math: cost per visit, expected sales, cost per sale, and what your remaining budget can still buy
+- Ends with advice in order of impact, the exact place to change each thing, and a stop rule
 
-For your own ads it first asks a few short questions (the result that counts, a good cost per result, your audience, your landing page, your house rules), each with a default so "ok" works. It can save the answers to `ad-profile.md` so it doesn't ask again. It replies in your language.
+It can also tear down a single ad, yours or a competitor's from the Meta Ad Library: scores, three ideas worth borrowing, three fixes and three test variants.
+
+It never changes anything in your ad account. It reads, and you decide.
 
 ## Use it
 
-**Claude Code or Codex (full version, including video).** Copy the `ad-analyzer` folder into `.claude/skills/` (or `~/.claude/skills/`) and restart; for Codex use `~/.codex/skills/`. Then say "analyse this ad: ~/Downloads/ad.mp4" or "which of my ads works best?" with your export.
+**Claude Code or Codex (full version, including video).** Copy the `ad-analyzer` folder into `.claude/skills/` (or `~/.claude/skills/`) and restart; for Codex use `~/.codex/skills/`. Then say "check my Meta campaign" (with Ads Manager open in a browser Claude can use, or with an export), or "analyse this ad: ~/Downloads/ad.mp4".
 
-**ChatGPT or Claude in the browser.** Upload the folder as a skill (ChatGPT: Plugins > Skills > Create > Upload; Claude: Settings > Capabilities > Code execution on, then Customize > Skills > Upload a skill, as a ZIP). Share a screenshot, image or export and ask for an analysis. Video files may not work there: send screenshots of the opening, key moments and the end card instead, plus the spoken text.
+**ChatGPT or Claude in the browser.** Upload the folder as a skill (ChatGPT: Plugins > Skills > Create > Upload; Claude: Settings > Capabilities > Code execution on, then Customize > Skills > Upload a skill, as a ZIP). Share screenshots of Ads Manager (the Ads tab with the columns from `references/campaign-audit.md`), or an export, and ask for an audit. Video files may not work there: send screenshots of the opening, key moments and the end card instead, plus the spoken text.
 
 ## What it needs
 
-- **For exports (mode B):** Python with `pandas` (`pip install pandas`, plus `openpyxl` for Excel files). Most code environments already have it.
-- **For video files (mode A):** `ffmpeg`
+- **For exports:** Python with `pandas` (`pip install pandas`, plus `openpyxl` for Excel files). Most code environments already have it.
+- **For video files:** `ffmpeg`
   - macOS: `brew install ffmpeg`
   - Ubuntu/Debian: `sudo apt install ffmpeg`
   - Windows: `winget install ffmpeg`
@@ -43,6 +44,7 @@ python3 scripts/extract.py --help
 
 ## Good to know
 
+- Benchmarks date quickly and many come from vendors. The skill labels each one and searches for newer figures when it can.
 - The hook rate and fatigue thresholds are rules of thumb. Your own account history is the better benchmark, so the skill compares ads within your export first.
 - Ads with under ~1,000 impressions or fewer than 5 results are shown as "not proof yet".
 - Export column names differ per account and language. The skill maps what it finds and tells you what's missing.
