@@ -1,8 +1,13 @@
 # linkedin-infographic
 
-A skill for Claude and ChatGPT that turns a LinkedIn post, a how-to video or a sketch into an
-animated infographic: a static 1080x1350 HTML poster with one calm accent animation,
-rendered to MP4 (LinkedIn), GIF (email, blog) and a cover PNG.
+A skill for Claude and ChatGPT that turns a LinkedIn post, a creator analysis, a how-to video or
+a sketch into an animated infographic: a 1080x1350 HTML poster that is complete from frame 1,
+with either one calm accent animation or a full app-UI motion cheat sheet (a light walks through
+the cards while each replays its own micro-animation). Rendered to a LinkedIn GIF that plays as an
+image post (1080x1350, max 250 frames), an MP4, an email GIF and a cover PNG.
+
+Four styles: playbook, warm-editorial, pastel-flowchart and motion-cheatsheet. The motion cheat
+sheet comes as a template you fill through one `CONFIG` block (`templates/motion-cheatsheet.html`).
 
 Requirements: Python 3 with `playwright` (`pip install playwright && playwright install chromium`),
 `Pillow`, and `ffmpeg` on the PATH.
@@ -24,9 +29,10 @@ Code or Codex); in a plain chat the skill still does the concept and copy.
 
 ## How it works
 
-Start with `SKILL.md`. The workflow is: concept and copy in chat → approval → build
-`infographic.html` from a style reference and a template → `python3 render.py` → QA at
-feed size → deliver.
+Start with `SKILL.md`. The workflow is: look at the best infographics in your niche → concept
+and copy in chat → approval → build `infographic.html` from a style reference and a template →
+`python3 render.py --slug my-poster --duration 12000` → QA at feed size → deliver (GIF as a
+LinkedIn image post, MP4 as the backup).
 
 Made by the team behind [Postiv.ai](https://postiv.ai), the LinkedIn growth platform. The
 skill works on its own; if you want Claude to post the result straight to LinkedIn and read

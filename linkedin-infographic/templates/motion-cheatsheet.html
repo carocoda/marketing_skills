@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion cheat sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;overflow:hidden}
+body{font-family:'Geist',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
+#c{position:absolute;left:0;top:0;width:1080px;height:1350px;overflow:hidden;background-color:var(--bg);
+  background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:22px 22px;background-position:11px 11px}
+.a{position:absolute}
+.fx{display:flex;align-items:center}
+.mono{font-family:'Geist Mono',monospace;letter-spacing:0}
+.muted{color:var(--muted)}
+.card{position:absolute;background:#fff;border:1.5px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.03),0 14px 30px -24px rgba(16,20,38,.35)}
+.box{position:absolute;background:var(--panel);border-radius:12px;overflow:hidden}
+.inner{position:absolute;width:158px;height:150px;top:0}
+.av{border-radius:50%;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;background:var(--accent)}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.chip{display:flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;font-size:14px;font-weight:700;white-space:nowrap}
+.sec{position:absolute;font-size:25px;font-weight:700;letter-spacing:-0.025em;color:var(--accent)}
+.secs{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:-0.005em;margin-left:12px}
+.lab{font-family:'Geist Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.04em}
+#ring{position:absolute;border-radius:20px;border:2.5px solid var(--bright);box-shadow:0 0 0 5px var(--glow),0 0 26px var(--glow2);pointer-events:none}
+</style>
+</head>
+<body>
+<div id="c"></div>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+// MOTION CHEAT SHEET: a data-driven 1080x1350 infographic that moves like a Dribbble shot.
+// The poster is complete at t=0 (that frame is the cover and the still fallback). On one timeline a
+// glow walks the cards in reading order and each card replays its own micro-animation.
+// window.seek(ms) is a pure function of time; render.py samples it frame by frame.
+//
+// Replace everything in CONFIG. The example below is FICTIONAL DATA, only there to show the shape.
+// Copy limits (or the cards overflow): rule title <= 18 chars, body <= 60, WINS/FLOPS label <= 8,
+// value <= 6, punchline <= 2 lines; score label <= 30; concept hook <= 60, concept <= 55.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  duration: 12,                                  // seconds; keep 12 for a 240-frame LinkedIn GIF at 20 fps
+  colors: {
+    accent: '#1E40AF',   // title accent word, section titles, active chips, footer pill   (replace with your brand)
+    bright: '#3B66F1',   // the walking glow, carets, highlights
+    win: '#1F7A4D', winBg: '#E4F2E9', flop: '#C2412D', flopBg: '#FBE9E5',
+    bg: '#F3F1EC', dot: '#DEDBD3', panel: '#F6F5F1', line: '#E6E3DC', ink: '#0E0F12', muted: '#6F727B',
+  },
+  // the app rail on the left: your logo (file in this folder) or a letter, and the icons (one active)
+  rail: { logo: '', letter: 'Y', icons: ['grid', 'plus', 'search', 'cal', 'chart', 'bulb', 'users'], active: 'bulb', author: 'author.jpeg' },
+  // the subject of the playbook (a creator, a brand, a tool); photo optional (initials otherwise)
+  subject: { name: 'Alex Rivera', photo: '' },
+  title: ['Alex Rivera’s', 'LinkedIn {Playbook}'],     // two lines; {word} gets the accent colour
+  // the app-style bar under the title: a search token, chips, and a meta line on the right
+  bar: { token: 'Alex Rivera', chips: [['Following', 'users', 'soft'], ['Outliers', 'trend', 'solid'], ['Outperforming', 'sort', 'outline']], meta: '42 posts · last 30 days' },
+  rules: {
+    title: 'Her 5 rules', sub: 'what her best posts have in common',
+    cards: [   // 3 to 5 cards; each picks one mini visual (tiles, steps, compare, freebie, repeat)
+      { t: 'Own one topic', b: '7 of her 10 best posts are about one tool.', w: ['Topic', '1,240'], f: ['Other', '610'], p: 'Pick a lane.',
+        visual: { type: 'tiles', cells: [1, 1, 0, 1, 1, 1, 0, 1, 1, 0], label: '/10 on topic' } },
+      { t: 'Teach in steps', b: 'Numbered how-tos and prompts you can paste.', w: ['How-tos', '19/24'], f: ['Opinions', '3/12'], p: 'Show the steps.',
+        visual: { type: 'steps', chip: '> paste prompt' } },
+      { t: 'Always a visual', b: 'Every one of her best posts has an image.', w: ['Image', '980'], f: ['Text', '402'], p: 'Make it visual.',
+        visual: { type: 'compare', a: 'image', b: 'text only' } },
+      { t: 'Freebie up top', b: 'Her winners open with something free.', w: ['Freebie', '1,150'], f: ['None', '590'], p: 'Lead with a gift.',
+        visual: { type: 'freebie', line: '12 free templates', mark: '(for free)', tag: 'FREE', count: 1150 } },
+      { t: 'Run winners again', b: 'Same post, 3 weeks later. It did better.', w: ['Week 4', '1,310'], f: ['Week 1', '1,020'], p: 'Repost what works.', labs: ['AGAIN', 'FIRST'],
+        visual: { type: 'repeat', from: 'Week 1', to: 'Week 4', gap: '3 weeks', gain: '+28%' } },
+    ],
+  },
+  score: {
+    title: 'What lands, what flops', sub: 'posts above her usual (median) post',
+    cards: [ { t: 'How-to with an image', n: 15, of: 17, icon: 'image', good: true },
+             { t: 'Opinion or hot take', n: 3, of: 12, icon: 'mega', good: false },
+             { t: 'Plain-text post', n: 1, of: 8, icon: 'text', good: false } ],
+  },
+  concepts: {
+    title: 'Steal the concept', sub: 'her 2 biggest posts, as templates for your niche',
+    cards: [ { img: '', x: '3.1', hook: '“Your inbox is a mess. Here’s how I fixed mine in 4 prompts.”', concept: 'A pain everyone has, plus a free fix in steps' },
+             { img: '', x: '2.7', hook: '“Nobody explains this tool properly. So I did.”', concept: 'The complete guide to your tool, in levels' } ],
+  },
+  source: 'Example data. Replace with your own analysis: posts, period, metric, what “usual” means.',
+  footer: { name: 'AUTHOR NAME', site: 'yoursite.com', photo: 'author.jpeg', follow: 'Follow for a new playbook every week' },
+};
+
+// ═════════════════════════════════ engine (no need to edit below) ═════════════════════════════════
+const DUR = CONFIG.duration; window.DURATION_MS = DUR * 1000;
+const C = CONFIG.colors, R = document.documentElement.style;
+for (const [k, v] of Object.entries({ accent: C.accent, bright: C.bright, win: C.win, winbg: C.winBg, flop: C.flop, flopbg: C.flopBg,
+  bg: C.bg, dot: C.dot, panel: C.panel, line: C.line, ink: C.ink, muted: C.muted })) R.setProperty('--' + k, v);
+const hexA = (h, a) => `rgba(${[1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)).join(',')},${a})`;
+R.setProperty('--glow', hexA(C.bright, .14)); R.setProperty('--glow2', hexA(C.bright, .35));
+R.setProperty('--winbg', C.winBg); R.setProperty('--flopbg', C.flopBg);
+
+const clamp = (x, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
+const lerp = (a, b, x) => a + (b - a) * x;
+const eo = x => 1 - Math.pow(1 - clamp(x), 3);
+const eio = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+function spr(tau, w = 14, z = 0.75) { if (tau <= 0) return 0; const wd = w * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w * tau) * (Math.cos(wd * tau) + (z * w / wd) * Math.sin(wd * tau)); }
+function track(keys, t, w = 12, z = 0.86) { let v = keys[0][1]; for (let i = 1; i < keys.length; i++) { if (t <= keys[i][0]) break; v += (keys[i][1] - keys[i - 1][1]) * spr(t - keys[i][0], w, z); } return v; }
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, x) => { const A = hex(a), B = hex(b); x = clamp(x); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], x))).join(',')})`; };
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const dip = (t, a, d = 0.18) => t < a ? 1 : t < a + d ? 1 - eio((t - a) / d) : 0;   // final state, quick dip at a, then rebuild
+
+const ICON = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', search: '<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/>',
+  cal: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/>',
+  bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/>', users: '<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.7"/>',
+  trend: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>', sort: '<path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', image: '<rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
+  text: '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>', mega: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+  like: '<path d="M7 10v12"/><path d="M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9Z"/>',
+};
+const ic = (n, s, c, w = 2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex:none">${ICON[n] || ''}</svg>`;
+const initials = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const AV = (src, name, s, extra = '') => `<div class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s * .38)}px;${extra}">${src ? `<img src="${src}" onerror="this.parentNode.textContent='${initials(name)}'">` : initials(name)}</div>`;
+const SPARK = s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="display:block"><path d="M12 1.5l1.9 7.2 7.1-2.6-5.1 5.6 5.6 4.9-7.4-.7L12 22.5l-2.1-6.6-7.4.7 5.6-4.9L3 6.1l7.1 2.6z" fill="#fff"/></svg>`;
+const accentWords = s => s.replace(/\{([^}]+)\}/g, `<span style="color:var(--accent)">$1</span>`);
+const thumb = (img, label) => img ? `background:url(${img}) center top/cover` :
+  `background:linear-gradient(160deg, ${hexA(C.accent, .16)}, ${hexA(C.bright, .32)})`;
+
+// ── layout ───────────────────────────────────────────────────────────────────────────────────────
+const RC = CONFIG.rules.cards, SC = CONFIG.score.cards, CC = CONFIG.concepts.cards;
+const CW = (960 - (RC.length - 1) * 12) / RC.length, CX = k => 88 + k * (CW + 12), CY = 306, CH = 444;
+const SBW = (960 - (SC.length - 1) * 12) / SC.length, SBX = k => 88 + k * (SBW + 12), SBY = 814, SBH = 164;
+const SCW = (960 - (CC.length - 1) * 12) / CC.length, SCX = k => 88 + k * (SCW + 12), SCY = 1044, SCH = 210;
+const IX = (CW - 24 - 158) / 2;   // centre the 158 px visual inside the panel
+
+let H = '';
+const rail = CONFIG.rail;
+H += `<div class="a" style="left:0;top:0;width:62px;height:1350px;background:#FAF9F6;border-right:1px solid var(--line)"></div>
+  ${rail.logo ? `<img class="a" src="${rail.logo}" style="left:15px;top:26px;width:32px;height:32px;border-radius:9px">`
+    : `<div class="a fx" style="left:15px;top:26px;width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;justify-content:center;font-weight:700;font-size:17px">${rail.letter}</div>`}
+  ${rail.icons.map((n, k) => n === rail.active
+    ? `<div class="a fx" style="left:12px;top:${88 + k * 48}px;width:38px;height:38px;border-radius:11px;background:${hexA(C.accent, .1)};justify-content:center">${ic(n, 20, C.accent, 2)}</div>`
+    : `<div class="a" style="left:21px;top:${97 + k * 48}px">${ic(n, 20, '#9A9CA3', 1.8)}</div>`).join('')}
+  <div class="a" style="left:15px;top:1296px">${AV(rail.author, CONFIG.footer.name, 32)}</div>`;
+H += `<div class="a" style="left:88px;top:40px">${AV(CONFIG.subject.photo, CONFIG.subject.name, 104, 'box-shadow:0 0 0 4px #fff,0 8px 22px -10px rgba(16,20,38,.45)')}</div>
+  <div class="a" style="left:216px;top:36px;font-size:57px;line-height:1.02;font-weight:700;letter-spacing:-0.04em;white-space:nowrap">${accentWords(CONFIG.title[0])}<br>${accentWords(CONFIG.title[1])}</div>
+  <div class="a fx" style="left:88px;top:180px;width:960px;height:58px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:0 14px;gap:10px;box-shadow:0 10px 26px -22px rgba(16,20,38,.4)">
+    ${ic('search', 19, '#8A8C93', 2)}
+    <div class="fx" style="height:34px;padding:0 12px 0 4px;gap:8px;border-radius:999px;background:#F3F2EE;font-size:16px;font-weight:600">${AV(CONFIG.subject.photo, CONFIG.subject.name, 26)}${CONFIG.bar.token}</div>
+    ${CONFIG.bar.chips.map(([l, i, s], k) => s === 'solid'
+      ? `<div id="shimC" class="chip" style="position:relative;overflow:hidden;height:34px;background:var(--accent);color:#fff;font-size:15px">${ic(i, 16, '#fff', 2.4)}${l}<div id="shim" class="a" style="top:0;left:-40px;width:34px;height:34px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg)"></div></div>`
+      : s === 'soft' ? `<div class="chip" style="height:34px;background:${hexA(C.accent, .1)};color:var(--accent);font-size:15px">${ic(i, 16, C.accent, 2.2)}${l}</div>`
+      : `<div class="chip" style="height:34px;border:1.5px solid var(--line);color:#2B2D33;font-size:15px;font-weight:600">${l} ${ic(i, 15, '#8A8C93', 2)}</div>`).join('')}
+    <div style="flex:1"></div>
+    <div id="live" style="width:9px;height:9px;border-radius:50%;background:#22A06B"></div>
+    <div class="mono muted" style="font-size:15px">${CONFIG.bar.meta}</div></div>`;
+
+const section = (top, s) => `<div class="sec fx" style="left:88px;top:${top}px">${s.title}<span class="secs">${s.sub}</span></div>`;
+H += section(262, CONFIG.rules);
+RC.forEach((r, k) => {
+  const labs = r.labs || ['WINS', 'FLOPS'], half = (CW - 28) / 2;
+  H += `<div id="r${k}" class="card" style="left:${CX(k)}px;top:${CY}px;width:${CW}px;height:${CH}px">
+    <div class="a fx" style="left:14px;top:15px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;justify-content:center;font-size:14px;font-weight:700">${k + 1}</div>
+    <div class="a" style="left:46px;top:12px;width:${CW - 58}px;font-size:19px;line-height:1.15;font-weight:700;letter-spacing:-0.025em">${r.t}</div>
+    <div class="a" style="left:14px;top:66px;width:${CW - 26}px;font-size:15px;line-height:1.33;color:#45474E">${r.b}</div>
+    <div id="v${k}" class="box" style="left:12px;top:150px;width:${CW - 24}px;height:150px"><div id="vi${k}" class="inner" style="left:${IX}px"></div></div>
+    <div class="a" style="left:12px;top:310px;width:${half}px;height:66px;border-radius:10px;background:var(--winbg);padding:7px 8px">
+      <div class="lab" style="color:var(--win)">${labs[0]}</div><div style="font-size:14px;color:var(--win);opacity:.85;margin-top:2px">${r.w[0]}</div><div style="font-size:18px;font-weight:700;color:var(--win);letter-spacing:-0.02em">${r.w[1]}</div></div>
+    <div class="a" style="left:${16 + half}px;top:310px;width:${half}px;height:66px;border-radius:10px;background:var(--flopbg);padding:7px 8px">
+      <div class="lab" style="color:var(--flop)">${labs[1]}</div><div style="font-size:14px;color:var(--flop);opacity:.85;margin-top:2px">${r.f[0]}</div><div style="font-size:18px;font-weight:700;color:var(--flop);letter-spacing:-0.02em">${r.f[1]}</div></div>
+    <div class="a" style="left:14px;top:388px;width:${CW - 26}px;font-size:18px;line-height:1.18;font-weight:700;letter-spacing:-0.02em">${r.p}</div></div>`;
+});
+H += section(772, CONFIG.score);
+SC.forEach((s, k) => {
+  const col = s.good ? C.accent : C.flop, bg = s.good ? hexA(C.accent, .1) : C.flopBg;
+  H += `<div id="b${k}" class="card" style="left:${SBX(k)}px;top:${SBY}px;width:${SBW}px;height:${SBH}px">
+    <div class="a fx" style="left:16px;top:16px;width:36px;height:36px;border-radius:10px;background:${bg};justify-content:center">${ic(s.icon, 19, col, 2)}</div>
+    <div class="a" style="left:62px;top:24px;width:${SBW - 76}px;font-size:17px;font-weight:700;letter-spacing:-0.02em">${s.t}</div>
+    <div class="a fx" style="left:16px;top:62px;align-items:baseline;gap:3px"><span id="bn${k}" style="font-size:46px;font-weight:700;letter-spacing:-0.045em;color:${col}">${s.n}</span><span class="muted" style="font-size:22px;font-weight:600">/${s.of}</span></div>
+    <div class="a muted" style="right:16px;top:86px;font-size:15px;font-weight:500">above usual</div>
+    <div class="a" style="left:16px;top:130px;width:${SBW - 32}px;height:12px;border-radius:6px;background:#EEECE6"></div>
+    <div id="bf${k}" class="a" style="left:16px;top:130px;height:12px;border-radius:6px;background:${col}"></div></div>`;
+});
+H += section(1002, CONFIG.concepts);
+CC.forEach((s, k) => {
+  H += `<div id="s${k}" class="card" style="left:${SCX(k)}px;top:${SCY}px;width:${SCW}px;height:${SCH}px">
+    <div class="a fx" style="left:14px;top:14px;width:124px;height:182px;border-radius:12px;${thumb(s.img)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);justify-content:center">${s.img ? '' : ic('image', 30, hexA(C.accent, .45), 1.8)}</div>
+    <div id="sx${k}" class="a chip" style="left:152px;top:16px;background:var(--accent);color:#fff;transform-origin:0 50%">${ic('trend', 15, '#fff', 2.4)}${s.x}× usual</div>
+    <div class="a" style="left:152px;top:56px;width:${SCW - 168}px;font-size:18px;line-height:1.3;font-weight:650;letter-spacing:-0.015em">${s.hook}</div>
+    <div class="a" style="left:152px;top:116px;width:${SCW - 168}px;height:1.5px;background:#EEECE6"></div>
+    <div class="a lab" style="left:152px;top:128px;color:var(--bright)">THE CONCEPT</div>
+    <div id="st${k}" class="a" style="left:152px;top:148px;width:${SCW - 168}px;font-size:18px;line-height:1.3;font-weight:650;color:var(--accent);letter-spacing:-0.015em"></div></div>`;
+});
+const F = CONFIG.footer;
+H += `<div class="a muted" style="left:88px;top:1264px;font-size:13px;font-weight:500">${CONFIG.source}</div>
+  <div class="a fx" style="left:88px;top:1290px;width:960px;height:46px;justify-content:center;gap:12px">
+    <div class="fx" style="height:46px;padding:0 20px 0 6px;gap:12px;border-radius:999px;background:var(--accent);color:#fff;box-shadow:0 12px 26px -14px ${hexA(C.accent, .7)}">
+      ${AV(F.photo, F.name, 34, 'box-shadow:0 0 0 2px rgba(255,255,255,.7)')}<span style="font-size:16px;font-weight:700;letter-spacing:.02em">${F.name.toUpperCase()}</span><span style="opacity:.55">•</span><span style="font-size:16px;font-weight:600;opacity:.8">${F.site}</span></div>
+    <div style="font-size:16px;font-weight:600;color:#3A3C43">${F.follow}</div></div>
+  <div id="ring"></div>`;
+document.getElementById('c').innerHTML = H;
+
+// ── the five mini visuals: markup + their replay animation (a = the moment the card's replay starts) ──
+const $ = id => document.getElementById(id);
+const VIS = {
+  tiles: {
+    html: (v, k) => v.cells.map((c, i) => `<div id="t${k}_${i}" class="a fx" style="left:${9 + (i % 5) * 30}px;top:${20 + Math.floor(i / 5) * 38}px;width:24px;height:30px;border-radius:6px;justify-content:center">${c ? SPARK(11) : ''}</div>`).join('')
+      + `<div class="a fx" style="left:12px;top:104px;align-items:baseline;gap:6px"><span id="tc${k}" style="font-size:26px;font-weight:700;letter-spacing:-0.04em;color:var(--accent)"></span><span style="font-size:15px;font-weight:600;color:#55575E">${v.label}</span></div>`,
+    anim(v, k, t, a) {
+      let lit = 0;
+      v.cells.forEach((c, i) => {
+        const s = a + 0.22 + i * 0.075, on = t < a ? 1 : t < a + 0.18 ? 1 - eio((t - a) / 0.18) : clamp((t - s) / 0.12), el = $(`t${k}_${i}`);
+        el.style.background = c ? mix('#E4E1DA', C.accent, on) : mix('#E4E1DA', '#CFCBC2', on);
+        el.style.transform = `scale(${t < a ? 1 : t < s ? 0.86 : 0.86 + 0.14 * spr(t - s, 16, 0.6)}) translateX(${!c && t > s ? Math.sin((t - s) * 40) * 3 * Math.exp(-(t - s) * 7) : 0}px)`;
+        if (c && on > 0.5) lit++;
+      });
+      $(`tc${k}`).textContent = lit;
+    },
+  },
+  steps: {
+    html: (v, k) => [0, 1, 2].map(r => `<div id="sc${k}_${r}" class="a fx" style="left:12px;top:${18 + r * 34}px;width:22px;height:22px;border-radius:50%;justify-content:center">${ic('check', 13, '#fff', 3.2)}</div>
+        <div class="a mono" style="left:42px;top:${20 + r * 34}px;font-size:14px;font-weight:600;color:#55575E">${r + 1}.</div>
+        <div id="sb${k}_${r}" class="a" style="left:62px;top:${25 + r * 34}px;height:8px;border-radius:4px;background:var(--accent)"></div>`).join('')
+      + `<div class="a fx mono" style="left:12px;top:118px;height:22px;padding:0 8px;border-radius:6px;background:#0E0F12;color:#E8E8EA;font-size:13px;gap:2px">${v.chip}<span id="cr${k}" style="display:inline-block;width:6px;height:13px;background:#8FB0FF;margin-left:3px"></span></div>`,
+    anim(v, k, t, a) {
+      [0, 1, 2].forEach(r => {
+        const s = a + 0.25 + r * 0.3, d = dip(t, a), grow = t < a ? 1 : t < s ? 0 : eo((t - s) / 0.3);
+        $(`sb${k}_${r}`).style.width = ([78, 62, 84][r] * Math.max(d, grow)) + 'px';
+        const ck = $(`sc${k}_${r}`), on = t < a ? 1 : t < s + 0.25 ? (t < a + 0.18 ? d : 0) : clamp((t - s - 0.25) / 0.1);
+        ck.style.background = mix('#FFFFFF', C.win, on); ck.style.boxShadow = `inset 0 0 0 2px ${mix('#C9C6BE', C.win, on)}`;
+        ck.style.transform = `scale(${t < a || t < s + 0.25 ? 1 : 0.8 + 0.2 * spr(t - s - 0.25, 18, 0.55)})`;
+        ck.querySelector('svg').style.opacity = on;
+      });
+      $(`cr${k}`).style.opacity = Math.floor(t * 2) % 2 ? 0.15 : 1;
+    },
+  },
+  compare: {
+    html: (v, k) => {
+      const post = (x, img) => `<div class="a" style="left:${x}px;top:14px;width:66px;height:100px;border-radius:9px;background:#fff;box-shadow:0 0 0 1px #E6E3DC">
+        <div class="a" style="left:7px;top:7px;width:12px;height:12px;border-radius:50%;background:#D9D6CE"></div><div class="a" style="left:23px;top:10px;width:30px;height:5px;border-radius:3px;background:#E3E0D9"></div>
+        ${img ? `<div class="a" style="left:7px;top:26px;width:52px;height:5px;border-radius:3px;background:#E3E0D9"></div><div id="ci${k}" class="a fx" style="left:7px;top:38px;width:52px;height:54px;border-radius:7px;justify-content:center;overflow:hidden">${ic('image', 20, '#fff', 2)}</div>`
+          : [52, 46, 52, 38, 50, 30].map((w, i) => `<div class="a" style="left:7px;top:${26 + i * 11}px;width:${w}px;height:5px;border-radius:3px;background:#E3E0D9"></div>`).join('')}</div>`;
+      return post(10, 1) + post(82, 0) + `<div class="a" style="left:10px;top:122px;width:66px;text-align:center;font-size:14px;font-weight:700;color:var(--accent)">${v.a}</div>
+        <div id="ct${k}" class="a" style="left:82px;top:122px;width:66px;text-align:center;font-size:14px;font-weight:600;color:#8A8C93;white-space:nowrap">${v.b}</div>`;
+    },
+    anim(v, k, t, a) {
+      const s = a + 0.3, fill = t < a ? 1 : t < a + 0.18 ? dip(t, a) : clamp((t - s) / 0.35), el = $(`ci${k}`);
+      el.style.background = `linear-gradient(135deg, ${mix('#ECEAE5', C.bright, fill)}, ${mix('#ECEAE5', C.accent, fill)})`;
+      el.querySelector('svg').style.transform = `scale(${t < a ? 1 : t < s ? 0 : spr(t - s - 0.1, 16, 0.55)})`;
+      $(`ct${k}`).style.transform = `translateY(${t > a + 0.4 ? Math.sin((t - a - 0.4) * 30) * 2 * Math.exp(-(t - a - 0.4) * 6) : 0}px)`;
+    },
+  },
+  freebie: {
+    html: (v, k) => `<div class="a" style="left:10px;top:12px;width:138px;height:126px;border-radius:10px;background:#fff;box-shadow:0 0 0 1px #E6E3DC">
+        <div class="a fx" style="left:9px;top:9px;gap:6px">${AV(CONFIG.subject.photo, CONFIG.subject.name, 18)}<div style="width:44px;height:5px;border-radius:3px;background:#E3E0D9"></div></div>
+        <div id="gf${k}" class="a chip" style="right:8px;top:7px;height:22px;padding:0 7px;gap:4px;font-size:13px;background:var(--winbg);color:var(--win);transform-origin:100% 50%">${ic('gift', 13, C.win, 2.2)}${v.tag}</div>
+        <div class="a" style="left:9px;top:36px;width:122px;font-size:14px;line-height:1.25;font-weight:650;letter-spacing:-0.01em">${v.line} <span id="fr${k}" style="border-radius:4px;padding:0 2px;background-repeat:no-repeat;background-image:linear-gradient(${hexA(C.win, .22)},${hexA(C.win, .22)})">${v.mark}</span></div>
+        <div class="a" style="left:9px;top:78px;width:118px;height:5px;border-radius:3px;background:#E3E0D9"></div>
+        <div class="a fx" style="left:9px;top:98px;gap:5px;font-size:14px;font-weight:700;color:#3A3C43">${ic('like', 14, '#3A3C43', 2.2)}<span id="fl${k}"></span></div></div>`,
+    anim(v, k, t, a) {
+      const s = a + 0.2, mark = t < a ? 1 : t < a + 0.18 ? dip(t, a) : eio((t - s) / 0.35);
+      $(`fr${k}`).style.backgroundSize = (mark * 100) + '% 100%';
+      const g = t < a ? 1 : t < s + 0.35 ? 0 : spr(t - s - 0.35, 17, 0.55);
+      $(`gf${k}`).style.transform = `scale(${g})`; $(`gf${k}`).style.opacity = clamp(g * 3);
+      $(`fl${k}`).textContent = fmt(v.count * (t < a ? 1 : t < s ? dip(t, a) : eo((t - s) / 0.9)));
+    },
+  },
+  repeat: {
+    html: (v, k) => `<svg class="a" style="left:0;top:0" width="158" height="150" viewBox="0 0 158 150"><path id="arc${k}" d="M40 44 Q79 10 118 44" fill="none" stroke="${C.bright}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 5"/><path id="arh${k}" d="M111 37 L119 45 L109 48" fill="none" stroke="${C.bright}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div id="dg${k}" class="a mono" style="left:29px;top:4px;width:100px;text-align:center;font-size:13px;font-weight:700;color:var(--bright);white-space:nowrap">${v.gap}</div>
+        ${[0, 1].map(i => `<div id="rp${k}_${i}" class="a" style="left:${i ? 96 : 16}px;top:46px;width:46px;height:60px;border-radius:8px;background:#fff;box-shadow:0 0 0 ${i ? 2 : 1}px ${i ? C.bright : '#E0DDD5'}">
+          <div class="a" style="left:6px;top:7px;width:10px;height:10px;border-radius:50%;background:#D9D6CE"></div>
+          ${[34, 28, 34, 22].map((w, j) => `<div class="a" style="left:6px;top:${23 + j * 8}px;width:${w}px;height:4px;border-radius:2px;background:#E3E0D9"></div>`).join('')}</div>`).join('')}
+        <div class="a mono" style="left:4px;top:114px;width:70px;text-align:center;font-size:13px;font-weight:600;color:#8A8C93;white-space:nowrap">${v.from}</div>
+        <div class="a mono" style="left:84px;top:114px;width:70px;text-align:center;font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap">${v.to}</div>
+        <div id="gn${k}" class="a chip" style="left:112px;top:30px;height:22px;padding:0 6px;font-size:13px;background:var(--winbg);color:var(--win);transform-origin:0 100%">${v.gain}</div>`,
+    anim(v, k, t, a) {
+      const s = a + 0.2, fly = t < a ? 1 : t < a + 0.18 ? dip(t, a) : eio((t - s) / 0.55), card = $(`rp${k}_1`);
+      card.style.left = lerp(16, 96, fly) + 'px'; card.style.top = (46 - Math.sin(fly * Math.PI) * 30) + 'px'; card.style.transform = `rotate(${Math.sin(fly * Math.PI) * -8}deg)`;
+      $(`arc${k}`).style.strokeDashoffset = (1 - fly) * 90; $(`arc${k}`).style.opacity = fly; $(`arh${k}`).style.opacity = clamp((fly - 0.8) * 5); $(`dg${k}`).style.opacity = fly;
+      const g = t < a ? 1 : t < s + 0.6 ? 0 : spr(t - s - 0.6, 17, 0.55);
+      $(`gn${k}`).style.transform = `scale(${g})`; $(`gn${k}`).style.opacity = clamp(g * 3);
+    },
+  },
+};
+RC.forEach((r, k) => { $('vi' + k).innerHTML = VIS[r.visual.type].html(r.visual, k); });
+
+// ── the timeline ─────────────────────────────────────────────────────────────────────────────────
+const step = Math.min(1.45, (DUR - 4.4) / RC.length);   // time per rule card
+const RA = k => 0.55 + k * step;
+const BA = k => RA(RC.length) + 0.25 + k * 0.42;
+const SA = k => BA(SC.length) + 0.2 + k * 0.95;
+const END = SA(CC.length - 1) + 1.05;                  // the glow fades out from here; must be <= DUR - 0.35
+const RECT = el => [el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight];
+let RK;
+function buildRing() {
+  RK = [[0, RECT($('r0'))], [RA(0) - 0.25, RECT($('r0'))]];
+  RC.forEach((_, k) => k && RK.push([RA(k) - 0.25, RECT($('r' + k))]));
+  SC.forEach((_, k) => RK.push([BA(k) - 0.2, RECT($('b' + k))]));
+  CC.forEach((_, k) => RK.push([SA(k) - 0.25, RECT($('s' + k))]));
+}
+function seekT(t) {
+  $('live').style.boxShadow = `0 0 0 ${3 + 3 * (0.5 + 0.5 * Math.sin(t * 2 * Math.PI / 1.2))}px rgba(34,160,107,.18)`;   // period divides the loop
+  const sh = $('shim'); if (sh) sh.style.left = lerp(-40, 140, eio((t - 0.05) / 0.7)) + 'px';
+  const ring = $('ring'), g = i => track(RK.map(k => [k[0], k[1][i]]), t, 11, 0.9);
+  ring.style.left = (g(0) - 3) + 'px'; ring.style.top = (g(1) - 3) + 'px'; ring.style.width = (g(2) + 6) + 'px'; ring.style.height = (g(3) + 6) + 'px';
+  ring.style.opacity = clamp((t - 0.3) / 0.25) * (1 - clamp((t - END) / 0.3));
+  RC.forEach((r, k) => VIS[r.visual.type].anim(r.visual, k, t, RA(k)));
+  SC.forEach((s, k) => {
+    const a = BA(k), v = t < a ? 1 : t < a + 0.16 ? dip(t, a, 0.16) : eo((t - a - 0.16) / 0.8);
+    $('bf' + k).style.width = ((SBW - 32) * s.n / s.of * v) + 'px'; $('bn' + k).textContent = Math.round(s.n * v);
+  });
+  CC.forEach((s, k) => {
+    const a = SA(k), chars = [...s.concept];
+    const n = t < a ? chars.length : t < a + 0.2 ? Math.round(chars.length * (1 - (t - a) / 0.2)) : Math.round(chars.length * clamp((t - a - 0.25) / 0.75));
+    const caret = (t >= a && t < a + 1.1) || (t >= a + 1.1 && t < a + 1.5 && Math.floor(t * 2.5) % 2 === 0);
+    $('st' + k).innerHTML = chars.slice(0, n).join('') + `<span style="display:inline-block;width:2.5px;height:20px;background:${C.bright};vertical-align:-3px;margin-left:2px;opacity:${caret ? 1 : 0}"></span>`;
+    $('sx' + k).style.transform = `scale(${t < a ? 1 : 1 + 0.08 * Math.sin(clamp((t - a) / 0.4) * Math.PI)})`;
+  });
+}
+window.seek = ms => seekT(((ms / 1000) % DUR + DUR) % DUR);
+window.READY = false;
+document.fonts.ready.then(() => {
+  buildRing(); window.seek(0); window.READY = true;
+  if (END > DUR - 0.35) console.warn(`motion runs until ${END.toFixed(2)} s: raise duration or use fewer cards for a seamless loop`);
+  if (new URLSearchParams(location.search).has('play')) { const t0 = performance.now(); (function loop() { window.seek(performance.now() - t0); requestAnimationFrame(loop); })(); }
+});
+</script>
+</body>
+</html>

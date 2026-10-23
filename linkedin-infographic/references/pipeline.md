@@ -3,15 +3,16 @@
 ## How it works
 
 1. `infographic.html` is one self-contained file, exactly 1080x1350 CSS px
-   (`html, body { width:1080px; height:1350px; overflow:hidden }`). All motion is
-   CSS `@keyframes` on ONE shared timeline (same duration, `linear`/`ease`,
-   `infinite`, keyframe percentages as windows).
-2. A `window.seek(ms)` harness freezes the whole page at any timestamp, which makes
-   rendering deterministic:
+   (`html, body { width:1080px; height:1350px; overflow:hidden }`).
+2. It exposes `window.seek(ms)`, which freezes the whole page at any timestamp. That
+   makes rendering deterministic. Two harnesses, pick by style:
+
+   **CSS harness (styles 1-3).** All motion is CSS `@keyframes` on ONE shared
+   timeline (same duration, `linear`/`ease`, `infinite`, keyframe percentages as
+   windows), and seek pauses every animation at the same time:
 
 ```html
 <script>
-  window.DURATION_MS = 5000; // must match render.py
   window.seek = function (ms) {
     document.getAnimations().forEach(function (a) {
       a.pause();
@@ -21,17 +22,42 @@
 </script>
 ```
 
-3. `render.py` (template in `scripts/render.py`) opens the file headless with
-   Playwright (viewport 1080x1350, `device_scale_factor=2` for retina), waits for
-   `document.fonts.ready` + 400ms, then loops `seek(i/FPS*1000)` + screenshot per
-   frame. Cover PNG = `seek(0)`; the poster is static, so t=0 is the neutral poster.
-4. ffmpeg assembles:
-   - **GIF**: scale to 720 wide, `palettegen=max_colors=160` +
-     `paletteuse=dither=bayer:bayer_scale=5`, `-loop 0`. Target under 1 MB.
-   - **MP4**: full 1080x1350, `libx264 -crf 18 -pix_fmt yuv420p -movflags +faststart`.
-     This is the LinkedIn upload.
+   **JS harness (style 4).** The motion is a pure function of time: `seek(ms)` sets
+   every style from `t` and nothing else (no timers, no state carried between
+   frames). Counting numbers, typing, springs and a ring that follows the cards are
+   all easy this way. Measure the layout once after the fonts are in, then flag it:
 
-Defaults: 20 fps. A 5 s loop for about 4 sections, 6.5 s for about 8 items.
+```js
+window.seek = ms => seekT(((ms / 1000) % DUR + DUR) % DUR);   // wrap into one loop
+window.READY = false;
+document.fonts.ready.then(() => { measureLayout(); window.seek(0); window.READY = true; });
+```
+
+   Helpers the template uses: an ease-out `eo`, an ease-in-out `eio`, a damped spring
+   `spr(dt, stiffness, damping)`, and `track(keys, t)` that moves a value from key to
+   key with that spring (the walking ring).
+3. `scripts/render.py` opens the file headless with Playwright (viewport 1080x1350,
+   `device_scale_factor=2` for crisp text), waits for `document.fonts.ready` and for
+   `window.READY` if the page sets it, then loops `seek(i / 30 * 1000)` + screenshot
+   for every frame at 30 fps. Cover PNG = `seek(0)`, which is the complete poster.
+4. ffmpeg assembles four files:
+   - **LinkedIn GIF**: 1080x1350, `fps = min(20, 250 / seconds)` so it never goes over
+     LinkedIn's 250 frames, `palettegen=max_colors=256:stats_mode=diff` +
+     `paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`, `-loop 0`.
+   - **MP4**: 30 fps, `libx264 -crf 18 -pix_fmt yuv420p -movflags +faststart`.
+   - **Email GIF**: 12 fps, 720 wide, 160 colours, same diff palette. Target ~1 MB.
+   - **Cover PNG** at 2x.
+5. It prints a seam check (mean pixel difference between the last and the first
+   frame), the LinkedIn GIF's frame count and every file size.
+
+```bash
+python3 render.py --slug my-poster --duration 5000              # calm accent poster
+python3 render.py --slug my-poster --duration 12000 --out ./renders
+python3 render.py --slug my-poster --duration 5000 --keep-frames   # keep _frames/ for QA
+```
+
+Loop lengths: 5 s for about 4 sections and 6.5 s for about 8 items (calm accent);
+12 s for a full motion cheat sheet (240 frames in the LinkedIn GIF).
 
 ## Fonts and assets
 
@@ -52,16 +78,19 @@ from PIL import Image
 Image.open('frames/frame_0050.png').crop((x1, y1, x2, y2)).save('check.png')
 ```
 
-- Frame 0 and the last frame must be identical (seamless loop):
+- The seam check render.py prints must say OK. A calm-accent poster should even be
+  pixel-identical between the last and the first frame:
 
 ```python
 from PIL import Image, ImageChops
-a = Image.open('frames/frame_0000.png'); b = Image.open('frames/frame_0099.png')
-assert ImageChops.difference(a, b).getbbox() is None
+a = Image.open('_frames/frame_0000.png'); b = Image.open('_frames/frame_0149.png')
+print(ImageChops.difference(a, b).getbbox())   # None = identical
 ```
 
+  A poster with ambient motion (a breathing dot) is never pixel-identical; there the
+  mean difference under 1 is the test.
 - Downscale the cover to 555x694 and read it again (feed size).
-- Afterwards: `rm -rf frames check*.png`.
+- Afterwards: delete `_frames/` (render.py does it unless `--keep-frames`) and the check PNGs.
 
 ## Technical pitfalls (all met in practice)
 
@@ -92,10 +121,22 @@ assert ImageChops.difference(a, b).getbbox() is None
    doubles the GIF because every frame differs. The calm single-highlight concept
    keeps GIFs around 0.4-0.6 MB.
 9. **Odd dimensions break yuv420p.** Keep width and height even (1080x1350 is fine).
-10. **LinkedIn plays no GIFs.** Uploaded GIFs render as a still. Hand over the MP4
-    for LinkedIn and say so explicitly.
+10. **GIFs on LinkedIn: frames, not megabytes.** LinkedIn takes GIFs up to 250
+    frames. A 30 fps GIF of a 12 s loop has 360 and fails; render.py caps the
+    LinkedIn GIF at 250. Some URL importers also sum the megapixels of every frame
+    (often a 40 MP cap), so upload the file directly. Check the first live post
+    (see `publishing.md`).
 11. **Grid rows equalise card heights.** In a 2x2 grid the shorter card gets dead
     space at the bottom. Either balance the text per row or make the card a flex
     column with the visual on `flex: 1`.
 12. **`object-fit: cover` crops screenshots.** Use `contain` on a white background
     for UI screenshots; the letterboxing is invisible on a white panel.
+13. **Springs and the loop seam.** A spring that is still settling at the loop
+    point makes a visible jump. Let every per-card animation finish, and fade the
+    walking ring out, at least 0.35 s before the end of the loop. The style-4
+    template warns in the console when the timeline runs too long.
+14. **Measure after the fonts.** Card positions measured before the web fonts load
+    are off by a few pixels, and the ring then sits next to its card. Measure in
+    `document.fonts.ready`, and let render.py wait for `window.READY`.
+15. **Ambient periods must divide the loop.** A breathing dot with a 1.2 s period
+    fits a 12 s loop ten times; a 1.3 s period jumps at the seam.
